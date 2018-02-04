@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace UserInterface
+namespace Vcpkg
 {
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
