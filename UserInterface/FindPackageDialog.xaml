@@ -1,0 +1,47 @@
+﻿<Window x:Class="Vcpkg.FindPackageDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Vcpkg"
+        mc:Ignorable="d"
+        Width="400" SizeToContent="Height"
+        ResizeMode="CanMinimize">
+    
+    <Window.Resources>
+        <local:StringAffixConverter x:Key="TitleConverter" Suffix=" Missing"/>
+    </Window.Resources>
+    <Window.Title>
+        <Binding Path="PackageName" Converter="{StaticResource ResourceKey=TitleConverter}"/>
+    </Window.Title>
+
+    <StackPanel Margin="4,0">
+        <TextBlock TextWrapping="Wrap" Margin="4">
+        <Run>Package </Run>
+        <Bold><Run Text="{Binding Path=PackageName}"/></Bold>
+        <Run> is missing. Please assign the package path.</Run>
+        </TextBlock>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="PathBox" Margin="4,0"
+                    Text="{Binding Path=PackagePath, Mode=TwoWay}"/>
+            <Button x:Name="Browse" Width="64"
+                Margin="4,0" Grid.Column="2"
+                Content="Browse" Click="Browse_Click"/>
+        </Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <StackPanel.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Width" Value="80"/>
+                    <Setter Property="Margin" Value="4"/>
+                </Style>
+            </StackPanel.Resources>
+            <Button x:Name="Download" Content="Download"/>
+            <Button x:Name="Confirm" Content="Confirm" Click="Confirm_Click"/>
+            <Button x:Name="Exit" Content="Exit" Click="Exit_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>
