@@ -27,6 +27,7 @@ namespace Vcpkg
             {
                 if (line.StartsWith("#"))
                     continue;
+                // FIXME: Description with multiple lines is ignored here, need fix
                 var lsplit = line.Split(new string[] { ": " }, 2, StringSplitOptions.RemoveEmptyEntries);
                 switch (lsplit[0])
                 {

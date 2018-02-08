@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Documents;
 
 namespace Vcpkg
@@ -56,16 +58,16 @@ namespace Vcpkg
 
         #endregion
 
-        public static int RunVcpkg(string arguments, out string output)
+        public static int RunVcpkg(string arguments, out string output, bool useShell = false)
         {
             ProcessStartInfo info = new ProcessStartInfo()
             {
                 FileName = Path.Combine(Properties.Settings.Default.vcpkg_path, "vcpkg.exe"),
                 Arguments = arguments,
                 WorkingDirectory = Properties.Settings.Default.vcpkg_path,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true
+                UseShellExecute = useShell,
+                CreateNoWindow = !useShell,
+                RedirectStandardOutput = !useShell
             };
             var process = Process.Start(info);
             process.WaitForExit();
@@ -92,6 +94,56 @@ namespace Vcpkg
             if (addr.IndexOf("://") < 0)
                 addr = Path.Combine(Properties.Settings.Default.vcpkg_path, addr);
             Process.Start(addr);
+        }
+
+        private void PortsSource_Filter(object sender, System.Windows.Data.FilterEventArgs e)
+        {
+            var keyword = SearchBox.Text.Trim();
+            if (string.IsNullOrEmpty(keyword))
+            {
+                e.Accepted = true;
+                return;
+            }
+
+            Port port = e.Item as Port;
+            if (port != null)
+            {
+                e.Accepted = port.CoreParagraph.Name.Contains(keyword);
+                if (!NameOnlyCheckBox.IsChecked.Value)
+                    e.Accepted = e.Accepted || (port.CoreParagraph.Description?.Contains(keyword) ?? false);
+            }
+        }
+
+        private void RefreshView()
+        {
+            var source = (CollectionViewSource)FindResource("PortsSource");
+            source.View.Refresh();
+        }
+
+        private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+            => RefreshView();
+
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            SearchBox.Text = string.Empty;
+        }
+
+        private void NameOnlyCheckBox_Checked(object sender, RoutedEventArgs e)
+            => RefreshView();
+
+        private void Install_Click(object sender, RoutedEventArgs e)
+        {
+            List<string> pkgs = new List<string>();
+            foreach(var item in PortsList.SelectedItems)
+                pkgs.Add((item as Port).CoreParagraph.Name);
+            var pkgstr = string.Join(" ", pkgs);
+
+            if (MessageBox.Show("Installing following packages:\n" + pkgstr + "\nAre you sure?", "Confirm",
+                                MessageBoxButton.OKCancel,
+                                MessageBoxImage.Question) == MessageBoxResult.OK)
+            {
+                var code = RunVcpkg("install " + pkgstr, out string result, true);
+            }
         }
     }
 }
