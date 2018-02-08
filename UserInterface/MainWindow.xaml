@@ -4,8 +4,24 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Vcpkg"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
+    <Window.Resources>
+        <CollectionViewSource x:Key="PortsSource" Source="{Binding Path=AllPorts}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="CoreParagraph.Name"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+
+        <Style x:Key="FilledListItemStyle" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
+    </Window.Resources>
+    
     <TabControl>
         <TabItem Header="Information">
             <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" 
@@ -45,7 +61,47 @@
             </RichTextBox>
         </TabItem>
         <TabItem Header="Avaliable Packages">
-            
+            <Grid Margin="0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Search" Margin="4" VerticalAlignment="Center"/>
+                <TextBox Grid.Column="1" Margin="4" Height="20"/>
+                <ListView Grid.Row="1" Grid.ColumnSpan="2" Margin="4"
+                          ItemContainerStyle="{StaticResource FilledListItemStyle}"
+                          ItemsSource="{Binding Source={StaticResource PortsSource}}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.ItemTemplate>
+                        <DataTemplate DataType="{x:Type local:Port}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding CoreParagraph.Name}"
+                                           FontSize="20" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding CoreParagraph.Version}"
+                                           Grid.Column="1" HorizontalAlignment="Right"
+                                           FontWeight="SemiBold" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding CoreParagraph.Description}"
+                                           Grid.Row="1" Grid.ColumnSpan="2"
+                                           TextTrimming="WordEllipsis" TextWrapping="Wrap" 
+                                           MaxHeight="40"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </TabItem>
+        <TabItem Header="Installed Package"></TabItem>
     </TabControl>
 </Window>

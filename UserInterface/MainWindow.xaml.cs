@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Documents;
@@ -15,6 +17,7 @@ namespace Vcpkg
             InitializeComponent();
             DataContext = this;
             ParseVersion();
+            AllPorts = Port.ParsePortsFolder(Path.Combine(Properties.Settings.Default.vcpkg_path, "ports"));
         }
 
         #region Bindings
@@ -43,6 +46,14 @@ namespace Vcpkg
         public static readonly DependencyProperty BuildHashProperty =
             DependencyProperty.Register("BuildHash", typeof(string), typeof(MainWindow), new PropertyMetadata(""));
 
+        public List<Port> AllPorts
+        {
+            get { return (List<Port>)GetValue(AllPortsProperty); }
+            set { SetValue(AllPortsProperty, value); }
+        }
+        public static readonly DependencyProperty AllPortsProperty =
+            DependencyProperty.Register("AllPorts", typeof(List<Port>), typeof(MainWindow), new PropertyMetadata(null));
+
         #endregion
 
         public static int RunVcpkg(string arguments, out string output)
@@ -65,7 +76,7 @@ namespace Vcpkg
         public void ParseVersion()
         {
             RunVcpkg("version", out string output);
-            var vEnd = output.IndexOf('\n');
+            var vEnd = output.IndexOf(Environment.NewLine);
             var vStart = output.LastIndexOf(' ', vEnd);
             var vstr = output.Substring(vStart, vEnd - vStart).Trim();
             var splitHead = vstr.IndexOf('-');
