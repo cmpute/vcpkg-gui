@@ -6,7 +6,46 @@
         xmlns:local="clr-namespace:Vcpkg"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+    <TabControl>
+        <TabItem Header="Information">
+            <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" 
+                         BorderThickness="0" Margin="0,8">
+                <FlowDocument>
+                    <Paragraph FontSize="16">
+                        <Bold>vcpkg</Bold> Information:
+                    </Paragraph>
+                    <Paragraph Margin="8,0">
+                        <Run Text="Current Version: "/>
+                        <Run Text="{Binding Path=Version, Mode=OneTime}"/>
+                        <LineBreak/>
+                        <Run Text="Build Date: "/>
+                        <Run Text="{Binding Path=BuildDate, Mode=OneTime}"/>
+                        <LineBreak/>
+                        <Run Text="Git Hash:"/>
+                        <Run Text="{Binding Path=BuildHash, Mode=OneTime}"/>
+                        <LineBreak/>
+                    </Paragraph>
+                    <Paragraph Margin="8,0">
+                        See
+                        <Hyperlink NavigateUri="LICENSE.txt" Click="Hyperlink_Click">LICENSE.txt</Hyperlink>
+                        for license information.
+                        <LineBreak/>
+                        Send an email to
+                        <Hyperlink NavigateUri="mailto:vcpkg@microsoft.com" Click="Hyperlink_Click">vcpkg@microsoft.com</Hyperlink>
+                        with any feedback.
+                    </Paragraph>
+                    <Paragraph FontSize="16">
+                        <Bold>vcpkg-gui</Bold> Information:
+                    </Paragraph>
+                    <Paragraph Margin="8,0">
+                        <Run Text="Author: "/>
+                        <Hyperlink NavigateUri="https://github.com/cmpute" Click="Hyperlink_Click">Jacob Zhong</Hyperlink>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+        </TabItem>
+        <TabItem Header="Avaliable Packages">
+            
+        </TabItem>
+    </TabControl>
 </Window>
