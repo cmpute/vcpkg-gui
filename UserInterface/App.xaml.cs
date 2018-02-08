@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 
@@ -15,14 +17,92 @@ namespace Vcpkg
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            var settings = Vcpkg.Properties.Settings.Default;
+
+            // Check if Git is installed
+            var gitPath = EnvironmentChecker.GetGit();
+            if (string.IsNullOrEmpty(gitPath))
+            {
+                new FindPackageDialog(EnvironmentChecker.GitName)
+                { WindowStartupLocation = WindowStartupLocation.CenterScreen }
+                    .ShowDialog();
+            }
 
             // Check if Vcpkg is downloaded
-            var vcpkg_path = EnvironmentChecker.GetVcpkgRoot();
-            if (string.IsNullOrEmpty(vcpkg_path))
-                new FindPackageDialog("vcpkg") { WindowStartupLocation = WindowStartupLocation.CenterScreen }
-                    .ShowDialog();
+            var getVcpkg = string.IsNullOrEmpty(settings.vcpkg_path);
+            if (!getVcpkg && !EnvironmentChecker.CheckVcpkgRoot(settings.vcpkg_path))
+                getVcpkg = true;
 
-            // Check
+            if (getVcpkg)
+            {
+                var vcpkgPath = EnvironmentChecker.GetVcpkgRoot();
+                if (string.IsNullOrEmpty(vcpkgPath))
+                {
+                    new FindPackageDialog(EnvironmentChecker.VcpkgName)
+                    { WindowStartupLocation = WindowStartupLocation.CenterScreen }
+                        .ShowDialog();
+                    vcpkgPath = Vcpkg.Properties.Settings.Default.vcpkg_path;
+                }
+                else Vcpkg.Properties.Settings.Default.vcpkg_path = vcpkgPath;
+            }
+
+            // Check if Vcpkg is updated and compiled
+            bool compile = false;
+            var git = new Process();
+            git.StartInfo.FileName = "git";
+            git.StartInfo.WorkingDirectory = settings.vcpkg_path;
+            git.StartInfo.UseShellExecute = false;
+            git.StartInfo.CreateNoWindow = true;
+            git.StartInfo.RedirectStandardOutput = true;
+
+            git.StartInfo.Arguments = "status";
+            git.Start(); git.WaitForExit();
+            var output = git.StandardOutput.ReadToEnd();
+            if(output.IndexOf("branch is behind") >= 0)
+            {
+                if(MessageBox.Show("Your vcpkg repository in not up-to-date, would you like to update and recompile vcpkg?",
+                                    "Update vcpkg",
+                                    MessageBoxButton.YesNo,
+                                    MessageBoxImage.Question) == MessageBoxResult.Yes)
+                {
+                    git.StartInfo.Arguments = "pull";
+                    git.Start(); git.WaitForExit();
+                    compile = true;
+                }
+            }
+
+            if(!compile && !EnvironmentChecker.CheckVcpkgCompiled(settings.vcpkg_path))
+            {
+                MessageBox.Show("Your vcpkg is not initialized. Compiling is going to be executed.",
+                                "Initialize vcpkg",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                compile = true;
+            }
+
+            while (compile)
+            {
+                // Parsed from boostrap.bat
+                var pspath = Path.Combine(settings.vcpkg_path, "scripts\\bootstrap.ps1");
+                var initialize = Process.Start("powershell.exe", "-NoProfile -ExecutionPolicy Bypass \"& {& '" + pspath + "'}\"");
+                initialize.WaitForExit();
+
+                if (!EnvironmentChecker.CheckVcpkgCompiled(settings.vcpkg_path))
+                {
+                    if (MessageBox.Show("vcpkg is not initialized successfully. Would you like to retry? If not, then this application will be terminated",
+                                    "Initialize unsuccessfully",
+                                    MessageBoxButton.YesNo,
+                                    MessageBoxImage.Warning) == MessageBoxResult.No)
+                        compile = false;
+                }
+                else compile = false;
+            }
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
+            Vcpkg.Properties.Settings.Default.Save();
         }
     }
 }

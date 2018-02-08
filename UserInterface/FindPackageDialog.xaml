@@ -17,9 +17,9 @@
 
     <StackPanel Margin="4,0">
         <TextBlock TextWrapping="Wrap" Margin="4">
-        <Run>Package </Run>
-        <Bold><Run Text="{Binding Path=PackageName}"/></Bold>
-        <Run> is missing. Please assign the package path.</Run>
+            <Run>Package </Run>
+            <Bold><Run Text="{Binding Path=PackageName}"/></Bold>
+            <Run> is missing. Please assign the package path.</Run>
         </TextBlock>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -36,10 +36,11 @@
             <StackPanel.Resources>
                 <Style TargetType="Button">
                     <Setter Property="Width" Value="80"/>
+                    <Setter Property="Height" Value="24"/>
                     <Setter Property="Margin" Value="4"/>
                 </Style>
             </StackPanel.Resources>
-            <Button x:Name="Download" Content="Download"/>
+            <Button x:Name="Download" Content="Download" Click="Download_Click"/>
             <Button x:Name="Confirm" Content="Confirm" Click="Confirm_Click"/>
             <Button x:Name="Exit" Content="Exit" Click="Exit_Click"/>
         </StackPanel>
