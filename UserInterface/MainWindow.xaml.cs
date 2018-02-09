@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -19,11 +20,17 @@ namespace Vcpkg
         {
             InitializeComponent();
             DataContext = this;
+
+            // Load Data
             ParseVersion();
-            AllPorts = Port.ParsePortsFolder(Path.Combine(Properties.Settings.Default.vcpkg_path, "ports"));
+            ParsePorts();
+            ParseTriplets();
         }
 
-        #region Bindings
+        #region Fields & Bindings
+        
+        public List<FeatureParagraph> CheckedFeatures = new List<FeatureParagraph>();
+        public ObservableCollection<string> CheckedTriplets = new ObservableCollection<string>();
 
         public string Version
         {
@@ -65,13 +72,13 @@ namespace Vcpkg
         public static readonly DependencyProperty DescriptionHeightProperty =
             DependencyProperty.Register("DescriptionHeight", typeof(double), typeof(MainWindow), new PropertyMetadata((double)40));
 
-        public List<FeatureParagraph> CheckedFeatures
+        public string CheckedTripletsString
         {
-            get { return (List<FeatureParagraph>)GetValue(CheckedFeaturesProperty); }
-            set { SetValue(CheckedFeaturesProperty, value); }
+            get { return (string)GetValue(CheckedTripletsStringProperty); }
+            set { SetValue(CheckedTripletsStringProperty, value); }
         }
-        public static readonly DependencyProperty CheckedFeaturesProperty =
-            DependencyProperty.Register("CheckedFeatures", typeof(List<FeatureParagraph>), typeof(MainWindow), new PropertyMetadata(null));
+        public static readonly DependencyProperty CheckedTripletsStringProperty =
+            DependencyProperty.Register("CheckedTripletsString", typeof(string), typeof(MainWindow), new PropertyMetadata(""));
 
         #endregion
         #region Integration
@@ -99,7 +106,7 @@ namespace Vcpkg
             else { return 0; }
         }
 
-        public void ParseVersion()
+        private void ParseVersion()
         {
             RunVcpkg("version", out string output);
             var vEnd = output.IndexOf(Environment.NewLine);
@@ -110,6 +117,33 @@ namespace Vcpkg
             Version = vstr.Substring(0, splitHead);
             BuildDate = vstr.Substring(splitHead + 1, splitEnd - splitHead - 1);
             BuildHash = vstr.Substring(splitEnd + 1);
+        }
+
+        private void ParsePorts()
+        {
+            AllPorts = Port.ParsePortsFolder(Path.Combine(Properties.Settings.Default.vcpkg_path, "ports"));
+        }
+
+        private void ParseTriplets()
+        {
+            CheckedTriplets.CollectionChanged += (sender, e) =>
+                CheckedTripletsString = string.Join(", ", CheckedTriplets);
+
+            RunVcpkg("help triplet", out string output);
+            foreach(var line in output.Split(new string[] { Environment.NewLine },
+                                             StringSplitOptions.RemoveEmptyEntries).Skip(1))
+            {
+                var tline = line.Trim();
+                var newitem = new MenuItem()
+                {
+                    Header = tline,
+                    IsCheckable = true,
+                };
+                newitem.Checked += MenuTriplet_Checked;
+                newitem.Unchecked += MenuTriplet_UnChecked;
+                if (tline == "x86-windows") newitem.IsChecked = true;
+                TripletsMenu.Items.Add(newitem);
+            }
         }
 
         private void RefreshView()
@@ -129,7 +163,7 @@ namespace Vcpkg
             Process.Start(addr);
         }
 
-        private void PortsSource_Filter(object sender, System.Windows.Data.FilterEventArgs e)
+        private void PortsSource_Filter(object sender, FilterEventArgs e)
         {
             var keyword = SearchBox.Text.Trim();
             if (string.IsNullOrEmpty(keyword))
@@ -147,10 +181,10 @@ namespace Vcpkg
             }
         }
 
-        private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
             => RefreshView();
 
-        private void Clear_Click(object sender, RoutedEventArgs e)
+        private void SearchClear_Click(object sender, RoutedEventArgs e)
         {
             SearchBox.Text = string.Empty;
         }
@@ -197,18 +231,17 @@ namespace Vcpkg
         private void MenuShowFullDescription_Unchecked(object sender, RoutedEventArgs e)
             => DescriptionHeight = 40;
 
+        private void MenuTriplet_Checked(object sender, RoutedEventArgs e)
+            => CheckedTriplets.Add((sender as MenuItem).Header.ToString());
+
+        private void MenuTriplet_UnChecked(object sender, RoutedEventArgs e)
+            => CheckedTriplets.Remove((sender as MenuItem).Header.ToString());
+
         private void Feature_Checked(object sender, RoutedEventArgs e)
-        {
-            if (CheckedFeatures == null) CheckedFeatures = new List<FeatureParagraph>();
-            var feature = (sender as CheckBox).DataContext;
-            CheckedFeatures.Add(feature as FeatureParagraph);
-        }
+            =>CheckedFeatures.Add((sender as CheckBox).DataContext as FeatureParagraph);
 
         private void Feature_Unchecked(object sender, RoutedEventArgs e)
-        {
-            var feature = (sender as CheckBox).DataContext;
-            CheckedFeatures.Remove(feature as FeatureParagraph);
-        }
+            => CheckedFeatures.Remove((sender as CheckBox).DataContext as FeatureParagraph);
 
         private void IntegrateInstall_Click(object sender, RoutedEventArgs e)
         {

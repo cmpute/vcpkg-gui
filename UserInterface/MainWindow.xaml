@@ -28,19 +28,21 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Common">
-                <MenuItem Header="Open Terminal"/>
-                <MenuItem Header="Hash"/>
+                <MenuItem Header="_Open Terminal"/>
+                <Separator/>
+                <MenuItem Header="_Hash.."/>
+                <MenuItem Header="_Clean"/>
             </MenuItem>
             <MenuItem Header="_Settings">
-                <MenuItem Header="Triplets" x:Name="TripletsMenu"/>
-                <MenuItem Header="Set Root Directory"/>
+                <MenuItem Header="_Triplets" x:Name="TripletsMenu"/>
+                <MenuItem Header="_Set Root Directory"/>
             </MenuItem>
             <MenuItem Header="_Integrate">
-                <MenuItem Header="Install" Click="IntegrateInstall_Click"/>
-                <MenuItem Header="Remove" Click="IntegrateRemove_Click"/>
+                <MenuItem Header="_Install" Click="IntegrateInstall_Click"/>
+                <MenuItem Header="_Remove" Click="IntegrateRemove_Click"/>
                 <MenuItem Header="Integrate PowerShell" Click="IntegratePowerShell_Click"
                           ToolTip="Enable PowerShell Tab-Completion"/>
-                <MenuItem Header="Integrate Project"/>
+                <MenuItem Header="Integrate _Project"/>
             </MenuItem>
         </Menu>
         <TabControl>
@@ -77,6 +79,9 @@
                         <Paragraph Margin="8,0">
                             <Run Text="Author: "/>
                             <Hyperlink NavigateUri="https://github.com/cmpute" Click="Hyperlink_Click">Jacob Zhong</Hyperlink>
+                            <LineBreak/>
+                            <Run Text="Selected Triplets: "/>
+                            <Run Text="{Binding CheckedTripletsString}"/>
                         </Paragraph>
                     </FlowDocument>
                 </RichTextBox>
@@ -98,7 +103,7 @@
                              Grid.Column="1" Margin="4" Height="20"
                              TextChanged="SearchBox_TextChanged"/>
                     <Button Grid.Column="2" Content="×" Width="20" Margin="4"
-                            Click="Clear_Click"/>
+                            Click="SearchClear_Click"/>
                     <StackPanel Orientation="Horizontal" Margin="4"
                                 Grid.Row="1" Grid.ColumnSpan="2"
                                 HorizontalAlignment="Right">

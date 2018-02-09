@@ -7,11 +7,49 @@ using System.Text;
 
 namespace Vcpkg
 {
+    public static class Paragraph
+    {
+        public static List<Dictionary<string, string>> ParseParagraph(string filepath)
+        {
+            var result = new List<Dictionary<string, string>>();
+            var paragraph = new Dictionary<string, string>();
+            string lastkey = null;
+            foreach (var line in File.ReadAllText(filepath).Split(
+                new string[] { Environment.NewLine }, StringSplitOptions.None))
+            {
+                if (line.StartsWith("#")) // comment
+                    continue;
+                else if (line.StartsWith("  ")) // continuous line
+                {
+                    if (lastkey == null) continue;
+                    paragraph[lastkey] += Environment.NewLine + line.Trim();
+                }
+                else if (string.IsNullOrWhiteSpace(line)) // paragraph end
+                {
+                    if (paragraph.Count > 0)
+                    {
+                        result.Add(paragraph);
+                        paragraph = new Dictionary<string, string>();
+                    }
+                }
+                else
+                {
+                    var lsplit = line.Split(new string[] { ": " }, 2, StringSplitOptions.RemoveEmptyEntries);
+                    paragraph.Add(lsplit[0], lsplit.Length < 2 ? string.Empty : lsplit[1]);
+                    lastkey = lsplit[0];
+                }
+            }
+            if(paragraph.Count >0) result.Add(paragraph);
+
+            return result;
+        }
+    }
+
     [DebuggerDisplay("{Name}")]
     public sealed class Port
     {
         private Port() { }
-        public string Name => CoreParagraph.Name;
+        public string Name => CoreParagraph?.Name;
         public SourceParagraph CoreParagraph { get; set; }
         public List<FeatureParagraph> FeatureParagraphs { get; set; }
 
@@ -21,57 +59,50 @@ namespace Vcpkg
             const string FeatureToken = "Feature";
 
             var port = new Port();
-            string token = null;
-            FeatureParagraph current = null;
-            foreach (var line in File.ReadAllText(filepath).Split(
-                new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var paragraph in Paragraph.ParseParagraph(filepath))
             {
-                if (line.StartsWith("#"))
-                    continue;
-                // FIXME: Description with multiple lines is ignored here, need fix
-                var lsplit = line.Split(new string[] { ": " }, 2, StringSplitOptions.RemoveEmptyEntries);
-                switch (lsplit[0])
+                if (paragraph.Keys.Contains(SourceToken))
                 {
-                    case SourceToken:
-                        token = SourceToken;
-                        port.CoreParagraph = new SourceParagraph() { Name = lsplit[1] };
-                        break;
-                    case FeatureToken:
-                        token = FeatureToken;
-                        if (current != null)
+                    port.CoreParagraph = new SourceParagraph() { Name = paragraph[SourceToken] };
+                    foreach (var item in paragraph)
+                        switch (item.Key)
                         {
-                            if (port.FeatureParagraphs == null)
-                                port.FeatureParagraphs = new List<Vcpkg.FeatureParagraph>();
-                            port.FeatureParagraphs.Add(current);
+                            case "Version":
+                                port.CoreParagraph.Version = item.Value;
+                                break;
+                            case "Build-Depends":
+                                port.CoreParagraph.Depends = item.Value.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+                                break;
+                            case "Description":
+                                port.CoreParagraph.Description = item.Value;
+                                break;
+                            case "Maintainer":
+                                port.CoreParagraph.Maintainer = item.Value;
+                                break;
+                            case "Supports":
+                                throw new NotSupportedException();
+                            case "Default-Features":
+                                throw new NotSupportedException();
                         }
-                        current = new FeatureParagraph(port.Name) { Name = lsplit[1] };
-                        break;
-                    
-                    // Fields
-                    case "Version":
-                        port.CoreParagraph.Version = lsplit[1];
-                        break;
-                    case "Build-Depends":
-                        var depends = lsplit[1].Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
-                        if (token == SourceToken)
-                            port.CoreParagraph.Depends = depends;
-                        else if (token == FeatureToken)
-                            current.Depends = depends;
-                        break;
-                    case "Description":
-                        if (token == SourceToken)
-                            port.CoreParagraph.Description = lsplit[1];
-                        else if (token == FeatureToken)
-                            current.Description = lsplit[1];
-                        break;
-                    case "Maintainer":
-                        port.CoreParagraph.Maintainer = lsplit[1];
-                        break;
-                    case "Supports":
-                        throw new NotImplementedException();
-                    case "Default-Features":
-                        throw new NotImplementedException();
                 }
+                else if (paragraph.Keys.Contains(FeatureToken))
+                {
+                    if (port.FeatureParagraphs == null)
+                        port.FeatureParagraphs = new List<FeatureParagraph>();
+                    if (port.Name == null) System.Diagnostics.Debugger.Break();
+                    var feature = new FeatureParagraph(port.Name) { Name = paragraph[FeatureToken] };
+                    foreach (var item in paragraph)
+                        switch (item.Key)
+                        {
+                            case "Build-Depends":
+                                feature.Depends = item.Value.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+                                break;
+                            case "Description":
+                                feature.Description = item.Value;
+                                break;
+                        }
+                }
+                else throw new FormatException("Unknown paragraph type");
             }
 
             return port;
@@ -92,7 +123,7 @@ namespace Vcpkg
     }
 
     [DebuggerDisplay("{Name}")]
-    public class SourceParagraph
+    public sealed class SourceParagraph
     {
         public string Name { get; set; }
         public string Version { get; set; }
@@ -103,8 +134,8 @@ namespace Vcpkg
         public string[] DefaultFeatures { get; set; }
     }
 
-    [DebuggerDisplay("{Name}")]
-    public class FeatureParagraph
+    [DebuggerDisplay("{CoreName}[{Name}]")]
+    public sealed class FeatureParagraph
     {
         public FeatureParagraph(string coreName) => CoreName = coreName;
         public string CoreName { get; set; }
