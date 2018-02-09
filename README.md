@@ -19,14 +19,14 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [ ] `--dry-run`
   - [ ] `--outdated`
 - [ ] `vcpkg list`
-  - [] `--x-full-desc`
+  - [ ] `--x-full-desc`
 - [ ] `vcpkg update`
 - [ ] `vcpkg upgrade`
 - [ ] `vcpkg hash`
 ------
-- [ ] `vcpkg integrate install`
-- [ ] `vcpkg integrate remove`
-- [ ] `vcpkg integrate project`
+- [x] `vcpkg integrate install`
+- [x] `vcpkg integrate remove`
+- [x] `vcpkg integrate project`
 - [ ] `vcpkg integrate powershell`
 ------
 - [ ] `vcpkg export`

@@ -188,7 +188,7 @@ namespace Vcpkg
         private void MenuEdit_Click(object sender, RoutedEventArgs e)
         {
             var pkg = (PortsList.SelectedItem as Port).Name;
-            var code = RunVcpkg("edit " + pkg, out string result, wait: false);
+            var code = RunVcpkg("edit " + pkg, out string _, wait: false);
         }
 
         private void MenuShowFullDescription_Checked(object sender, RoutedEventArgs e)
@@ -208,6 +208,33 @@ namespace Vcpkg
         {
             var feature = (sender as CheckBox).DataContext;
             CheckedFeatures.Remove(feature as FeatureParagraph);
+        }
+
+        private void IntegrateInstall_Click(object sender, RoutedEventArgs e)
+        {
+            if (RunVcpkg("integrate install", out string output) == 0)
+                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("User-wide integration for this vcpkg root is failed!", "Failure",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void IntegrateRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (RunVcpkg("integrate remove", out string output) == 0)
+                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("Failed to remove user-wide integration for this vcpkg root!", "Failure",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void IntegratePowerShell_Click(object sender, RoutedEventArgs e)
+        {
+            if (RunVcpkg("integrate powershell", out string output) == 0)
+                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("Failed to integrate PowerShell tab completion for this vcpkg root!", "Failure",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         #endregion

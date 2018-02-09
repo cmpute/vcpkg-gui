@@ -25,138 +25,156 @@
             </local:IsEmptyConverter.FalseValue>
         </local:IsEmptyConverter>
     </Window.Resources>
-    
-    <TabControl>
-        <TabItem Header="Information">
-            <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" 
-                         BorderThickness="0" Margin="0,8">
-                <FlowDocument>
-                    <Paragraph FontSize="16">
-                        <Bold>vcpkg</Bold> Information:
-                    </Paragraph>
-                    <Paragraph Margin="8,0">
-                        <Run Text="Current Version: "/>
-                        <Run Text="{Binding Path=Version, Mode=OneTime}"/>
-                        <LineBreak/>
-                        <Run Text="Build Date: "/>
-                        <Run Text="{Binding Path=BuildDate, Mode=OneTime}"/>
-                        <LineBreak/>
-                        <Run Text="Git Hash:"/>
-                        <Run Text="{Binding Path=BuildHash, Mode=OneTime}"/>
-                        <LineBreak/>
-                    </Paragraph>
-                    <Paragraph Margin="8,0">
-                        See
-                        <Hyperlink NavigateUri="LICENSE.txt" Click="Hyperlink_Click">LICENSE.txt</Hyperlink>
-                        for license information.
-                        <LineBreak/>
-                        Send an email to
-                        <Hyperlink NavigateUri="mailto:vcpkg@microsoft.com" Click="Hyperlink_Click">vcpkg@microsoft.com</Hyperlink>
-                        with any feedback.
-                    </Paragraph>
-                    <Paragraph FontSize="16">
-                        <Bold>vcpkg-gui</Bold> Information:
-                    </Paragraph>
-                    <Paragraph Margin="8,0">
-                        <Run Text="Author: "/>
-                        <Hyperlink NavigateUri="https://github.com/cmpute" Click="Hyperlink_Click">Jacob Zhong</Hyperlink>
-                    </Paragraph>
-                </FlowDocument>
-            </RichTextBox>
-        </TabItem>
-        <TabItem Header="Avaliable Packages">
-            <Grid Margin="0,8">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <TextBlock Text="Search" Margin="4" VerticalAlignment="Center"/>
-                <TextBox x:Name="SearchBox"
-                         Grid.Column="1" Margin="4" Height="20"
-                         TextChanged="SearchBox_TextChanged"/>
-                <Button Grid.Column="2" Content="×" Width="20" Margin="4"
-                        Click="Clear_Click"/>
-                <StackPanel Orientation="Horizontal" Margin="4"
-                            Grid.Row="1" Grid.ColumnSpan="2"
-                            HorizontalAlignment="Right">
-                    <CheckBox x:Name="NameOnlyCheckBox" Content="Search name Only"
-                              Unchecked="NameOnlyCheckBox_Checked"
-                              Checked="NameOnlyCheckBox_Checked"/>
-                </StackPanel>
-                <ListView x:Name="PortsList"
-                          Grid.Row="2" Grid.ColumnSpan="3" Margin="4"
-                          ItemContainerStyle="{StaticResource FilledListItemStyle}"
-                          ItemsSource="{Binding Source={StaticResource PortsSource}}"
-                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <ListView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Install" Click="MenuInstall_Click"/>
-                            <MenuItem Header="Edit" Click="MenuEdit_Click"/>
-                            <Separator/>
-                            <MenuItem Header="Show full description" IsCheckable="True"
-                                      Checked="MenuShowFullDescription_Checked"
-                                      Unchecked="MenuShowFullDescription_Unchecked"/>
-                        </ContextMenu>
-                    </ListView.ContextMenu>
-                    <ListView.ItemTemplate>
-                        <DataTemplate DataType="{x:Type local:Port}">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="2*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding Name}"
-                                           FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding CoreParagraph.Version}"
-                                           Grid.Column="1" HorizontalAlignment="Right"
-                                           FontWeight="SemiBold" FontStyle="Italic" VerticalAlignment="Bottom"/>
-                                <TextBlock Text="{Binding CoreParagraph.Description}"
-                                           Grid.Row="1" Grid.ColumnSpan="2"
-                                           TextTrimming="WordEllipsis" TextWrapping="Wrap"
-                                           MaxHeight="{Binding DataContext.DescriptionHeight,
-                                                               RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
-                                <Expander Grid.Row="2" Header="Features" Grid.ColumnSpan="2" Margin="0,4"
-                                          Visibility="{Binding FeatureParagraphs, Converter={StaticResource ListVisibilityConverter}}">
-                                    <ItemsControl ItemsSource="{Binding FeatureParagraphs}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate DataType="{x:Type local:FeatureParagraph}">
-                                                <CheckBox Margin="8" HorizontalContentAlignment="Stretch"
-                                                          Checked="Feature_Checked" Unchecked="Feature_Unchecked">
-                                                    <Grid>
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="Auto"/>
-                                                            <ColumnDefinition/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
-                                                                   FontSize="16" FontWeight="Bold"/>
-                                                        <TextBlock Grid.Column="1" HorizontalAlignment="Right"
-                                                                   Text="{Binding Description}"
-                                                                   TextTrimming="WordEllipsis" TextWrapping="Wrap"
-                                                                   MaxHeight="{Binding DataContext.DescriptionHeight,
-                                                                                       RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
-                                                    </Grid>
-                                                </CheckBox>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Expander>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
-        </TabItem>
-        <TabItem Header="Installed Package"></TabItem>
-    </TabControl>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Common">
+                <MenuItem Header="Open Terminal"/>
+                <MenuItem Header="Hash"/>
+            </MenuItem>
+            <MenuItem Header="_Settings">
+                <MenuItem Header="Triplets" x:Name="TripletsMenu"/>
+                <MenuItem Header="Set Root Directory"/>
+            </MenuItem>
+            <MenuItem Header="_Integrate">
+                <MenuItem Header="Install" Click="IntegrateInstall_Click"/>
+                <MenuItem Header="Remove" Click="IntegrateRemove_Click"/>
+                <MenuItem Header="Integrate PowerShell" Click="IntegratePowerShell_Click"
+                          ToolTip="Enable PowerShell Tab-Completion"/>
+                <MenuItem Header="Integrate Project"/>
+            </MenuItem>
+        </Menu>
+        <TabControl>
+            <TabItem Header="Information">
+                <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" 
+                             BorderThickness="0" Margin="0,8">
+                    <FlowDocument>
+                        <Paragraph FontSize="16">
+                            <Bold>vcpkg</Bold> Information:
+                        </Paragraph>
+                        <Paragraph Margin="8,0">
+                            <Run Text="Current Version: "/>
+                            <Run Text="{Binding Path=Version, Mode=OneTime}"/>
+                            <LineBreak/>
+                            <Run Text="Build Date: "/>
+                            <Run Text="{Binding Path=BuildDate, Mode=OneTime}"/>
+                            <LineBreak/>
+                            <Run Text="Git Hash:"/>
+                            <Run Text="{Binding Path=BuildHash, Mode=OneTime}"/>
+                            <LineBreak/>
+                        </Paragraph>
+                        <Paragraph Margin="8,0">
+                            See
+                            <Hyperlink NavigateUri="LICENSE.txt" Click="Hyperlink_Click">LICENSE.txt</Hyperlink>
+                            for license information.
+                            <LineBreak/>
+                            Send an email to
+                            <Hyperlink NavigateUri="mailto:vcpkg@microsoft.com" Click="Hyperlink_Click">vcpkg@microsoft.com</Hyperlink>
+                            with any feedback.
+                        </Paragraph>
+                        <Paragraph FontSize="16">
+                            <Bold>vcpkg-gui</Bold> Information:
+                        </Paragraph>
+                        <Paragraph Margin="8,0">
+                            <Run Text="Author: "/>
+                            <Hyperlink NavigateUri="https://github.com/cmpute" Click="Hyperlink_Click">Jacob Zhong</Hyperlink>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
+            </TabItem>
+            <TabItem Header="Avaliable Packages">
+                <Grid Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Search" Margin="4" VerticalAlignment="Center"/>
+                    <TextBox x:Name="SearchBox"
+                             Grid.Column="1" Margin="4" Height="20"
+                             TextChanged="SearchBox_TextChanged"/>
+                    <Button Grid.Column="2" Content="×" Width="20" Margin="4"
+                            Click="Clear_Click"/>
+                    <StackPanel Orientation="Horizontal" Margin="4"
+                                Grid.Row="1" Grid.ColumnSpan="2"
+                                HorizontalAlignment="Right">
+                        <CheckBox x:Name="NameOnlyCheckBox" Content="Search name Only"
+                                  Unchecked="NameOnlyCheckBox_Checked"
+                                  Checked="NameOnlyCheckBox_Checked"/>
+                    </StackPanel>
+                    <ListView x:Name="PortsList"
+                              Grid.Row="2" Grid.ColumnSpan="3" Margin="4"
+                              ItemContainerStyle="{StaticResource FilledListItemStyle}"
+                              ItemsSource="{Binding Source={StaticResource PortsSource}}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Install" Click="MenuInstall_Click"/>
+                                <MenuItem Header="Edit" Click="MenuEdit_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Show full description" IsCheckable="True"
+                                          Checked="MenuShowFullDescription_Checked"
+                                          Unchecked="MenuShowFullDescription_Unchecked"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:Port}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Name}"
+                                               FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding CoreParagraph.Version}"
+                                               Grid.Column="1" HorizontalAlignment="Right"
+                                               FontWeight="SemiBold" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                                    <TextBlock Text="{Binding CoreParagraph.Description}"
+                                               Grid.Row="1" Grid.ColumnSpan="2"
+                                               TextTrimming="WordEllipsis" TextWrapping="Wrap"
+                                               MaxHeight="{Binding DataContext.DescriptionHeight,
+                                                                   RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
+                                    <Expander Grid.Row="2" Header="Features" Grid.ColumnSpan="2" Margin="0,4"
+                                              Visibility="{Binding FeatureParagraphs, Converter={StaticResource ListVisibilityConverter}}">
+                                        <ItemsControl ItemsSource="{Binding FeatureParagraphs}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate DataType="{x:Type local:FeatureParagraph}">
+                                                    <CheckBox Margin="8" HorizontalContentAlignment="Stretch"
+                                                              Checked="Feature_Checked" Unchecked="Feature_Unchecked">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"
+                                                                       FontSize="16" FontWeight="Bold"/>
+                                                            <TextBlock Grid.Column="1" HorizontalAlignment="Right"
+                                                                       Text="{Binding Description}"
+                                                                       TextTrimming="WordEllipsis" TextWrapping="Wrap"
+                                                                       MaxHeight="{Binding DataContext.DescriptionHeight,
+                                                                                           RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
+                                                        </Grid>
+                                                    </CheckBox>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Expander>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Installed Package"></TabItem>
+        </TabControl>
+    </DockPanel>
 </Window>
