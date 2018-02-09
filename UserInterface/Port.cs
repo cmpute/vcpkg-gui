@@ -7,10 +7,11 @@ using System.Text;
 
 namespace Vcpkg
 {
-    [DebuggerDisplay("{CoreParagraph.Name}")]
+    [DebuggerDisplay("{Name}")]
     public sealed class Port
     {
         private Port() { }
+        public string Name => CoreParagraph.Name;
         public SourceParagraph CoreParagraph { get; set; }
         public List<FeatureParagraph> FeatureParagraph { get; set; }
 

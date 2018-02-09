@@ -56,9 +56,18 @@ namespace Vcpkg
         public static readonly DependencyProperty AllPortsProperty =
             DependencyProperty.Register("AllPorts", typeof(List<Port>), typeof(MainWindow), new PropertyMetadata(null));
 
-        #endregion
+        public double DescriptionHeight
+        {
+            get { return (double)GetValue(DescriptionHeightProperty); }
+            set { SetValue(DescriptionHeightProperty, value); }
+        }
+        public static readonly DependencyProperty DescriptionHeightProperty =
+            DependencyProperty.Register("DescriptionHeight", typeof(double), typeof(MainWindow), new PropertyMetadata((double)40));
 
-        public static int RunVcpkg(string arguments, out string output, bool useShell = false)
+        #endregion
+        #region Integration
+
+        public static int RunVcpkg(string arguments, out string output, bool useShell = false, bool wait = true)
         {
             ProcessStartInfo info = new ProcessStartInfo()
             {
@@ -70,9 +79,13 @@ namespace Vcpkg
                 RedirectStandardOutput = !useShell
             };
             var process = Process.Start(info);
-            process.WaitForExit();
-            output = process.StandardOutput.ReadToEnd();
-            return process.ExitCode;
+            if (wait)
+            {
+                process.WaitForExit();
+                output = process.StandardOutput.ReadToEnd();
+                return process.ExitCode;
+            }
+            else { output = null; return 0; }
         }
 
         public void ParseVersion()
@@ -87,6 +100,15 @@ namespace Vcpkg
             BuildDate = vstr.Substring(splitHead + 1, splitEnd - splitHead - 1);
             BuildHash = vstr.Substring(splitEnd + 1);
         }
+
+        private void RefreshView()
+        {
+            var source = (CollectionViewSource)FindResource("PortsSource");
+            source.View.Refresh();
+        }
+        
+        #endregion
+        #region Event Handlers
 
         private void Hyperlink_Click(object sender, RoutedEventArgs e)
         {
@@ -108,16 +130,10 @@ namespace Vcpkg
             Port port = e.Item as Port;
             if (port != null)
             {
-                e.Accepted = port.CoreParagraph.Name.Contains(keyword);
+                e.Accepted = port.Name.Contains(keyword);
                 if (!NameOnlyCheckBox.IsChecked.Value)
                     e.Accepted = e.Accepted || (port.CoreParagraph.Description?.Contains(keyword) ?? false);
             }
-        }
-
-        private void RefreshView()
-        {
-            var source = (CollectionViewSource)FindResource("PortsSource");
-            source.View.Refresh();
         }
 
         private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -131,11 +147,11 @@ namespace Vcpkg
         private void NameOnlyCheckBox_Checked(object sender, RoutedEventArgs e)
             => RefreshView();
 
-        private void Install_Click(object sender, RoutedEventArgs e)
+        private void MenuInstall_Click(object sender, RoutedEventArgs e)
         {
             List<string> pkgs = new List<string>();
             foreach(var item in PortsList.SelectedItems)
-                pkgs.Add((item as Port).CoreParagraph.Name);
+                pkgs.Add((item as Port).Name);
             var pkgstr = string.Join(" ", pkgs);
 
             if (MessageBox.Show("Installing following packages:\n" + pkgstr + "\nAre you sure?", "Confirm",
@@ -145,5 +161,19 @@ namespace Vcpkg
                 var code = RunVcpkg("install " + pkgstr, out string result, true);
             }
         }
+
+        private void MenuEdit_Click(object sender, RoutedEventArgs e)
+        {
+            var pkg = (PortsList.SelectedItem as Port).Name;
+            var code = RunVcpkg("edit " + pkg, out string result, wait: false);
+        }
+
+        private void MenuShowFullDescription_Checked(object sender, RoutedEventArgs e)
+            => DescriptionHeight = double.PositiveInfinity;
+
+        private void MenuShowFullDescription_Unchecked(object sender, RoutedEventArgs e)
+            => DescriptionHeight = 40;
+
+        #endregion
     }
 }

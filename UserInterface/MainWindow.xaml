@@ -12,7 +12,7 @@
                               Source="{Binding Path=AllPorts}"
                               Filter="PortsSource_Filter">
             <CollectionViewSource.SortDescriptions>
-                <scm:SortDescription PropertyName="CoreParagraph.Name"/>
+                <scm:SortDescription PropertyName="Name"/>
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
 
@@ -83,7 +83,7 @@
                 <StackPanel Orientation="Horizontal" Margin="4"
                             Grid.Row="1" Grid.ColumnSpan="2"
                             HorizontalAlignment="Right">
-                    <CheckBox x:Name="NameOnlyCheckBox" Content="Name Only"
+                    <CheckBox x:Name="NameOnlyCheckBox" Content="Search name Only"
                               Unchecked="NameOnlyCheckBox_Checked"
                               Checked="NameOnlyCheckBox_Checked"/>
                 </StackPanel>
@@ -94,7 +94,12 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListView.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Install" Click="Install_Click"/>
+                            <MenuItem Header="Install" Click="MenuInstall_Click"/>
+                            <MenuItem Header="Edit" Click="MenuEdit_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Show full description" IsCheckable="True"
+                                      Checked="MenuShowFullDescription_Checked"
+                                      Unchecked="MenuShowFullDescription_Unchecked"/>
                         </ContextMenu>
                     </ListView.ContextMenu>
                     <ListView.ItemTemplate>
@@ -108,15 +113,16 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="2*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="{Binding CoreParagraph.Name}"
+                                <TextBlock Text="{Binding Name}"
                                            FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding CoreParagraph.Version}"
                                            Grid.Column="1" HorizontalAlignment="Right"
                                            FontWeight="SemiBold" FontStyle="Italic" VerticalAlignment="Bottom"/>
                                 <TextBlock Text="{Binding CoreParagraph.Description}"
                                            Grid.Row="1" Grid.ColumnSpan="2"
-                                           TextTrimming="WordEllipsis" TextWrapping="Wrap" 
-                                           MaxHeight="40"/>
+                                           TextTrimming="WordEllipsis" TextWrapping="Wrap"
+                                           MaxHeight="{Binding DataContext.DescriptionHeight,
+                                                               RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>

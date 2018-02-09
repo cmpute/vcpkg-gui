@@ -1,0 +1,57 @@
+# Vcpkg-GUI
+GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
+
+## Implementations
+- [x] `vcpkg search`
+  - [ ] `--graph`
+  - [x] `--x-full-desc`
+- [x] `vcpkg install`
+  - [ ] `--dry-run`
+  - [ ] `--head`
+  - [ ] `--no-downloads`
+  - [ ] `--recurse`
+  - [ ] `--keep-going`
+  - [ ] `--x-xunit`
+- [ ] `vcpkg remove`
+  - [ ] `--purge`
+  - [ ] `--no-purge`
+  - [ ] `--recurse`
+  - [ ] `--dry-run`
+  - [ ] `--outdated`
+- [ ] `vcpkg list`
+  - [] `--x-full-desc`
+- [ ] `vcpkg update`
+- [ ] `vcpkg upgrade`
+- [ ] `vcpkg hash`
+------
+- [ ] `vcpkg integrate install`
+- [ ] `vcpkg integrate remove`
+- [ ] `vcpkg integrate project`
+- [ ] `vcpkg integrate powershell`
+------
+- [ ] `vcpkg export`
+  - [ ] `--dry-run`
+  - [ ] `--raw`
+  - [ ] `--nuget`
+  - [ ] `--ifw`
+  - [ ] `--zip`
+  - [ ] `--7zip`
+  - [ ] `--output`
+  - [ ] `--nuget-id`
+  - [ ] `--nuget-version`
+  - [ ] `--ifw-repository-url`
+  - [ ] `--ifw-packages-directory-path`
+  - [ ] `--ifw-repository-directory-path`
+  - [ ] `--ifw-configuration-file-path`
+  - [ ] `--ifw-installer-file-path`
+- [x] `vcpkg edit`
+  - [ ] `--buildtrees`
+- [ ] `vcpkg import`
+- [ ] `vcpkg create`
+- [ ] `vcpkg owns`
+- [ ] `vcpkg cache`
+- [x] `vcpkg version`
+- [x] `vcpkg contact`
+------
+- [ ] `--triplet`
+- [ ] `--vcpkg-root`
