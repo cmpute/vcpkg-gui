@@ -13,7 +13,7 @@ namespace Vcpkg
         private Port() { }
         public string Name => CoreParagraph.Name;
         public SourceParagraph CoreParagraph { get; set; }
-        public List<FeatureParagraph> FeatureParagraph { get; set; }
+        public List<FeatureParagraph> FeatureParagraphs { get; set; }
 
         public static Port ParseControlFile(string filepath)
         {
@@ -40,11 +40,11 @@ namespace Vcpkg
                         token = FeatureToken;
                         if (current != null)
                         {
-                            if (port.FeatureParagraph == null)
-                                port.FeatureParagraph = new List<Vcpkg.FeatureParagraph>();
-                            port.FeatureParagraph.Add(current);
+                            if (port.FeatureParagraphs == null)
+                                port.FeatureParagraphs = new List<Vcpkg.FeatureParagraph>();
+                            port.FeatureParagraphs.Add(current);
                         }
-                        current = new FeatureParagraph() { Name = lsplit[1] };
+                        current = new FeatureParagraph(port.Name) { Name = lsplit[1] };
                         break;
                     
                     // Fields
@@ -106,6 +106,8 @@ namespace Vcpkg
     [DebuggerDisplay("{Name}")]
     public class FeatureParagraph
     {
+        public FeatureParagraph(string coreName) => CoreName = coreName;
+        public string CoreName { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string[] Depends { get; set; }

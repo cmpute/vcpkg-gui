@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:Vcpkg"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <Style x:Key="FilledListItemStyle" TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+        </Style>
     </Application.Resources>
 </Application>
