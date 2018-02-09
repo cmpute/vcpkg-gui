@@ -4,18 +4,24 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace Vcpkg
 {
-    public static class Paragraph
+    public static class Parser
     {
+        private static string[] DotSplit(string str)
+            => str.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
+
         public static List<Dictionary<string, string>> ParseParagraph(string filepath)
         {
             var result = new List<Dictionary<string, string>>();
             var paragraph = new Dictionary<string, string>();
             string lastkey = null;
-            foreach (var line in File.ReadAllText(filepath).Split(
-                new string[] { Environment.NewLine }, StringSplitOptions.None))
+
+            var content = File.ReadAllText(filepath);
+            string sep = content.IndexOf(Environment.NewLine) < 0 ? "\n" : Environment.NewLine;
+            foreach (var line in content.Split(new string[] { sep }, StringSplitOptions.None))
             {
                 if (line.StartsWith("#")) // comment
                     continue;
@@ -43,15 +49,6 @@ namespace Vcpkg
 
             return result;
         }
-    }
-
-    [DebuggerDisplay("{Name}")]
-    public sealed class Port
-    {
-        private Port() { }
-        public string Name => CoreParagraph?.Name;
-        public SourceParagraph CoreParagraph { get; set; }
-        public List<FeatureParagraph> FeatureParagraphs { get; set; }
 
         public static Port ParseControlFile(string filepath)
         {
@@ -59,7 +56,7 @@ namespace Vcpkg
             const string FeatureToken = "Feature";
 
             var port = new Port();
-            foreach (var paragraph in Paragraph.ParseParagraph(filepath))
+            foreach (var paragraph in Parser.ParseParagraph(filepath))
             {
                 if (paragraph.Keys.Contains(SourceToken))
                 {
@@ -67,22 +64,12 @@ namespace Vcpkg
                     foreach (var item in paragraph)
                         switch (item.Key)
                         {
-                            case "Version":
-                                port.CoreParagraph.Version = item.Value;
-                                break;
-                            case "Build-Depends":
-                                port.CoreParagraph.Depends = item.Value.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
-                                break;
-                            case "Description":
-                                port.CoreParagraph.Description = item.Value;
-                                break;
-                            case "Maintainer":
-                                port.CoreParagraph.Maintainer = item.Value;
-                                break;
-                            case "Supports":
-                                throw new NotSupportedException();
-                            case "Default-Features":
-                                throw new NotSupportedException();
+                            case "Version": port.CoreParagraph.Version = item.Value; break;
+                            case "Build-Depends": port.CoreParagraph.Depends = DotSplit(item.Value); break;
+                            case "Description": port.CoreParagraph.Description = item.Value; break;
+                            case "Maintainer": port.CoreParagraph.Maintainer = item.Value; break;
+                            case "Supports": throw new NotSupportedException();
+                            case "Default-Features": throw new NotSupportedException();
                         }
                 }
                 else if (paragraph.Keys.Contains(FeatureToken))
@@ -94,12 +81,8 @@ namespace Vcpkg
                     foreach (var item in paragraph)
                         switch (item.Key)
                         {
-                            case "Build-Depends":
-                                feature.Depends = item.Value.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
-                                break;
-                            case "Description":
-                                feature.Description = item.Value;
-                                break;
+                            case "Build-Depends": feature.Depends = DotSplit(item.Value); break;
+                            case "Description": feature.Description = item.Value; break;
                         }
                 }
                 else throw new FormatException("Unknown paragraph type");
@@ -111,7 +94,7 @@ namespace Vcpkg
         public static List<Port> ParsePortsFolder(string folderpath)
         {
             var result = new List<Port>();
-            foreach(var dir in Directory.GetDirectories(folderpath))
+            foreach (var dir in Directory.GetDirectories(folderpath))
             {
                 var controlFile = Path.Combine(dir, "CONTROL");
                 if (!File.Exists(controlFile))
@@ -120,6 +103,50 @@ namespace Vcpkg
             }
             return result;
         }
+
+        private readonly static Dictionary<string, InstallState> InstallStateParser = new Dictionary<string, InstallState>()
+        {
+            {"not-installed", InstallState.NotInstalled },
+            {"half-installed", InstallState.HalfInstalled },
+            {"installed", InstallState.Installed }
+        };
+
+        public static List<StatusParagraph> ParseStatus(string statusFile)
+        {
+            var result = new List<StatusParagraph>();
+            foreach (var paragraph in ParseParagraph(statusFile))
+            {
+                var status = new StatusParagraph();
+                foreach (var item in paragraph)
+                {
+                    switch (item.Key)
+                    {
+                        case "Package": status.Package = item.Value; break;
+                        case "Version": status.Version = item.Value; break;
+                        case "Architecture": status.Architecture = item.Value; break;
+                        case "Multi-Arch": status.MultiArch = item.Value; break;
+                        case "Depends": status.Depends = DotSplit(item.Value); break;
+                        case "Description": status.Description = item.Value; break;
+                        case "Status":
+                            var strs = item.Value.Split(' ');
+                            status.Want = (Want)Enum.Parse(typeof(Want), strs[0], true);
+                            status.State = InstallStateParser[strs[2]];
+                            break;
+                    }
+                }
+                result.Add(status);
+            }
+            return result;
+        }
+    }
+
+
+    [DebuggerDisplay("{Name}")]
+    public sealed class Port
+    {
+        public string Name => CoreParagraph?.Name;
+        public SourceParagraph CoreParagraph { get; set; }
+        public List<FeatureParagraph> FeatureParagraphs { get; set; }
     }
 
     [DebuggerDisplay("{Name}")]
@@ -143,4 +170,35 @@ namespace Vcpkg
         public string Description { get; set; }
         public string[] Depends { get; set; }
     }
+
+    [DebuggerDisplay("{Package}:{Architecture}")]
+    public sealed class StatusParagraph
+    {
+        public string Package { get; set; }
+        public string Version { get; set; }
+        public string Architecture { get; set; }
+        public string MultiArch { get; set; }
+        public string Description { get; set; }
+        public string[] Depends { get; set; }
+        public Want Want { get; set; }
+        public InstallState State { get; set; }
+    }
+
+    public enum InstallState
+    {
+        ErrorState = 0,
+        NotInstalled,
+        HalfInstalled,
+        Installed
+    }
+
+    public enum Want
+    {
+        ErrorState = 0,
+        Unknown,
+        Install,
+        Hold,
+        Deinstall,
+        Purge
+    };
 }

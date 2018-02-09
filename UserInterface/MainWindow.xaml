@@ -15,6 +15,13 @@
                 <scm:SortDescription PropertyName="Name"/>
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
+        <CollectionViewSource x:Key="PackagesSource"
+                              Source="{Binding Path=PackageStatus}"
+                              Filter="PackagesSource_Filter">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Package"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
 
         <local:IsEmptyConverter x:Key="ListVisibilityConverter">
             <local:IsEmptyConverter.TrueValue>
@@ -31,7 +38,7 @@
                 <MenuItem Header="_Open Terminal"/>
                 <Separator/>
                 <MenuItem Header="_Hash.."/>
-                <MenuItem Header="_Clean"/>
+                <MenuItem Header="_Purge"/>
             </MenuItem>
             <MenuItem Header="_Settings">
                 <MenuItem Header="_Triplets" x:Name="TripletsMenu"/>
@@ -179,7 +186,78 @@
                     </ListView>
                 </Grid>
             </TabItem>
-            <TabItem Header="Installed Package"></TabItem>
+            <TabItem Header="Installed Package">
+                <Grid Margin="0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Search" Margin="4" VerticalAlignment="Center"/>
+                    <TextBox x:Name="SearchInstalledBox"
+                             Grid.Column="1" Margin="4" Height="20"
+                             TextChanged="SearchInstalledBox_TextChanged"/>
+                    <Button Grid.Column="2" Content="×" Width="20" Margin="4"
+                            Click="SearchInstalledClear_Click"/>
+                    <StackPanel Orientation="Horizontal" Margin="4"
+                                Grid.Row="1" Grid.ColumnSpan="2"
+                                HorizontalAlignment="Right">
+                        <CheckBox x:Name="PackageNameOnlyCheckBox" Content="Search name Only"
+                                  Unchecked="PackageNameOnlyCheckBox_Checked"
+                                  Checked="PackageNameOnlyCheckBox_Checked"/>
+                    </StackPanel>
+                    <ListView x:Name="PackagesList"
+                              Grid.Row="2" Grid.ColumnSpan="3" Margin="4"
+                              ItemContainerStyle="{StaticResource FilledListItemStyle}"
+                              ItemsSource="{Binding Source={StaticResource PackagesSource}}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListView.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Remove" Click="MenuRemove_Click"/>
+                                <MenuItem Header="Edit" Click="MenuPackageEdit_Click"/>
+                                <MenuItem Header="Edit Build Trees" Click="MenuPackageEditBT_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Show full description" IsCheckable="True"
+                                          Checked="MenuShowFullDescription_Checked"
+                                          Unchecked="MenuShowFullDescription_Unchecked"/>
+                            </ContextMenu>
+                        </ListView.ContextMenu>
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type local:StatusParagraph}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="2*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Package}"
+                                               FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding Architecture}" Grid.Column="1"
+                                               FontStyle="Italic"  Margin="4,0"/>
+                                    <TextBlock Text="{Binding Version}"
+                                               Grid.Column="2" HorizontalAlignment="Right"
+                                               FontWeight="SemiBold" FontStyle="Italic" VerticalAlignment="Bottom"/>
+                                    <TextBlock Text="{Binding Description}"
+                                               Grid.Row="1" Grid.ColumnSpan="3"
+                                               TextTrimming="WordEllipsis" TextWrapping="Wrap"
+                                               MaxHeight="{Binding DataContext.DescriptionHeight,
+                                                                   RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>

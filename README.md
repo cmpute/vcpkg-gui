@@ -18,8 +18,8 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [ ] `--recurse`
   - [ ] `--dry-run`
   - [ ] `--outdated`
-- [ ] `vcpkg list`
-  - [ ] `--x-full-desc`
+- [x] `vcpkg list`
+  - [x] `--x-full-desc`
 - [ ] `vcpkg update`
 - [ ] `vcpkg upgrade`
 - [ ] `vcpkg hash`
@@ -45,7 +45,7 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [ ] `--ifw-configuration-file-path`
   - [ ] `--ifw-installer-file-path`
 - [x] `vcpkg edit`
-  - [ ] `--buildtrees`
+  - [x] `--buildtrees`
 - [ ] `vcpkg import`
 - [ ] `vcpkg create`
 - [ ] `vcpkg owns`

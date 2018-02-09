@@ -25,6 +25,7 @@ namespace Vcpkg
             ParseVersion();
             ParsePorts();
             ParseTriplets();
+            ParseInstalledPackages();
         }
 
         #region Fields & Bindings
@@ -80,6 +81,14 @@ namespace Vcpkg
         public static readonly DependencyProperty CheckedTripletsStringProperty =
             DependencyProperty.Register("CheckedTripletsString", typeof(string), typeof(MainWindow), new PropertyMetadata(""));
 
+        public List<StatusParagraph> PackageStatus
+        {
+            get { return (List<StatusParagraph>)GetValue(PackageStatusProperty); }
+            set { SetValue(PackageStatusProperty, value); }
+        }
+        public static readonly DependencyProperty PackageStatusProperty =
+            DependencyProperty.Register("PackageStatus", typeof(List<StatusParagraph>), typeof(MainWindow), new PropertyMetadata(null));
+
         #endregion
         #region Integration
 
@@ -121,7 +130,7 @@ namespace Vcpkg
 
         private void ParsePorts()
         {
-            AllPorts = Port.ParsePortsFolder(Path.Combine(Properties.Settings.Default.vcpkg_path, "ports"));
+            AllPorts = Parser.ParsePortsFolder(Path.Combine(Properties.Settings.Default.vcpkg_path, "ports"));
         }
 
         private void ParseTriplets()
@@ -146,12 +155,24 @@ namespace Vcpkg
             }
         }
 
-        private void RefreshView()
+        private void ParseInstalledPackages()
+        {
+            RunVcpkg("list png", out string _); // Run vcpkg list to execute database_load_check() method in order to update list.
+            PackageStatus = Parser.ParseStatus(Path.Combine(Properties.Settings.Default.vcpkg_path, "installed", "vcpkg", "status"));
+        }
+
+        private void RefreshPortsView()
         {
             var source = (CollectionViewSource)FindResource("PortsSource");
             source.View.Refresh();
         }
-        
+
+        private void RefreshPackagesView()
+        {
+            var source = (CollectionViewSource)FindResource("PackagesSource");
+            source.View.Refresh();
+        }
+
         #endregion
         #region Event Handlers
 
@@ -162,6 +183,48 @@ namespace Vcpkg
                 addr = Path.Combine(Properties.Settings.Default.vcpkg_path, addr);
             Process.Start(addr);
         }
+
+        private void MenuTriplet_Checked(object sender, RoutedEventArgs e)
+            => CheckedTriplets.Add((sender as MenuItem).Header.ToString());
+
+        private void MenuTriplet_UnChecked(object sender, RoutedEventArgs e)
+            => CheckedTriplets.Remove((sender as MenuItem).Header.ToString());
+
+        private void IntegrateInstall_Click(object sender, RoutedEventArgs e)
+        {
+            if (RunVcpkg("integrate install", out string output) == 0)
+                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("User-wide integration for this vcpkg root is failed!", "Failure",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void IntegrateRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (RunVcpkg("integrate remove", out string output) == 0)
+                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("Failed to remove user-wide integration for this vcpkg root!", "Failure",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void IntegratePowerShell_Click(object sender, RoutedEventArgs e)
+        {
+            if (RunVcpkg("integrate powershell", out string output) == 0)
+                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+                MessageBox.Show("Failed to integrate PowerShell tab completion for this vcpkg root!", "Failure",
+                                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void MenuShowFullDescription_Checked(object sender, RoutedEventArgs e)
+            => DescriptionHeight = double.PositiveInfinity;
+
+        private void MenuShowFullDescription_Unchecked(object sender, RoutedEventArgs e)
+            => DescriptionHeight = 40;
+
+        #endregion
+        #region Ports Page Event Handlers
 
         private void PortsSource_Filter(object sender, FilterEventArgs e)
         {
@@ -182,7 +245,7 @@ namespace Vcpkg
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-            => RefreshView();
+            => RefreshPortsView();
 
         private void SearchClear_Click(object sender, RoutedEventArgs e)
         {
@@ -190,7 +253,7 @@ namespace Vcpkg
         }
 
         private void NameOnlyCheckBox_Checked(object sender, RoutedEventArgs e)
-            => RefreshView();
+            => RefreshPortsView();
 
         private void MenuInstall_Click(object sender, RoutedEventArgs e)
         {
@@ -225,49 +288,60 @@ namespace Vcpkg
             var code = RunVcpkg("edit " + pkg, out string _, wait: false);
         }
 
-        private void MenuShowFullDescription_Checked(object sender, RoutedEventArgs e)
-            => DescriptionHeight = double.PositiveInfinity;
-
-        private void MenuShowFullDescription_Unchecked(object sender, RoutedEventArgs e)
-            => DescriptionHeight = 40;
-
-        private void MenuTriplet_Checked(object sender, RoutedEventArgs e)
-            => CheckedTriplets.Add((sender as MenuItem).Header.ToString());
-
-        private void MenuTriplet_UnChecked(object sender, RoutedEventArgs e)
-            => CheckedTriplets.Remove((sender as MenuItem).Header.ToString());
-
         private void Feature_Checked(object sender, RoutedEventArgs e)
             =>CheckedFeatures.Add((sender as CheckBox).DataContext as FeatureParagraph);
 
         private void Feature_Unchecked(object sender, RoutedEventArgs e)
             => CheckedFeatures.Remove((sender as CheckBox).DataContext as FeatureParagraph);
 
-        private void IntegrateInstall_Click(object sender, RoutedEventArgs e)
+        #endregion
+        #region Packages Page Event Handlers
+
+        private void SearchInstalledBox_TextChanged(object sender, TextChangedEventArgs e)
+            => RefreshPackagesView();
+
+        private void SearchInstalledClear_Click(object sender, RoutedEventArgs e)
         {
-            if (RunVcpkg("integrate install", out string output) == 0)
-                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            else
-                MessageBox.Show("User-wide integration for this vcpkg root is failed!", "Failure",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+            SearchInstalledBox.Text = string.Empty;
         }
 
-        private void IntegrateRemove_Click(object sender, RoutedEventArgs e)
+        private void PackagesSource_Filter(object sender, FilterEventArgs e)
         {
-            if (RunVcpkg("integrate remove", out string output) == 0)
-                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            else
-                MessageBox.Show("Failed to remove user-wide integration for this vcpkg root!", "Failure",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+            var keyword = SearchInstalledBox.Text.Trim();
+            StatusParagraph status = e.Item as StatusParagraph;
+            if (string.IsNullOrEmpty(keyword))
+            {
+                e.Accepted = status.State == InstallState.Installed;
+                return;
+            }
+
+            if (status != null)
+            {
+                bool contain = status.Package.Contains(keyword);
+                if (!PackageNameOnlyCheckBox.IsChecked.Value)
+                    contain = contain || (status.Description?.Contains(keyword) ?? false);
+                e.Accepted = (status.State == InstallState.Installed) && contain;
+            }
         }
 
-        private void IntegratePowerShell_Click(object sender, RoutedEventArgs e)
+        private void PackageNameOnlyCheckBox_Checked(object sender, RoutedEventArgs e)
+            => RefreshPackagesView();
+
+        private void MenuRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (RunVcpkg("integrate powershell", out string output) == 0)
-                MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            else
-                MessageBox.Show("Failed to integrate PowerShell tab completion for this vcpkg root!", "Failure",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+            throw new NotImplementedException();
+        }
+
+        private void MenuPackageEdit_Click(object sender, RoutedEventArgs e)
+        {
+            var pkg = (PackagesList.SelectedItem as StatusParagraph).Package;
+            var code = RunVcpkg("edit " + pkg, out string _, wait: false);
+        }
+
+        private void MenuPackageEditBT_Click(object sender, RoutedEventArgs e)
+        {
+            var pkg = (PackagesList.SelectedItem as StatusParagraph).Package;
+            var code = RunVcpkg("edit " + pkg + " --buildtrees", out string _, wait: false);
         }
 
         #endregion
