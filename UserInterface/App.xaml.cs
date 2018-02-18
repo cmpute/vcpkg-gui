@@ -101,12 +101,20 @@ namespace Vcpkg
                 }
                 else compile = false;
             }
+            
+            Properties.Add(nameof(VcpkgRootPath), Vcpkg.Properties.Settings.Default.vcpkg_path);
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
             base.OnExit(e);
             Vcpkg.Properties.Settings.Default.Save();
+        }
+        
+        public string VcpkgRootPath
+        {
+            get => Properties[nameof(VcpkgRootPath)] as string;
+            set => Properties[nameof(VcpkgRootPath)] = value;
         }
     }
 }

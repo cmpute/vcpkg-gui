@@ -50,32 +50,9 @@ namespace Vcpkg
 
         #region Integration
 
-        public static int RunVcpkg(string arguments, out string output, bool useShell = false, bool wait = true)
-        {
-            ProcessStartInfo info = new ProcessStartInfo()
-            {
-                FileName = Path.Combine(Properties.Settings.Default.vcpkg_path, "vcpkg.exe"),
-                Arguments = arguments,
-                WorkingDirectory = Properties.Settings.Default.vcpkg_path,
-                UseShellExecute = useShell,
-                CreateNoWindow = !useShell,
-                RedirectStandardOutput = !useShell
-            };
-            var process = Process.Start(info);
-            output = null;
-            if (wait)
-            {
-                process.WaitForExit();
-                if(!useShell)
-                    output = process.StandardOutput.ReadToEnd();
-                return process.ExitCode;
-            }
-            else { return 0; }
-        }
-
         private void ParseVersion()
         {
-            RunVcpkg("version", out string output);
+            ExecutionDialog.RunVcpkg("version", out string output);
             var vEnd = output.IndexOf(Environment.NewLine);
             var vStart = output.LastIndexOf(' ', vEnd);
             var vstr = output.Substring(vStart, vEnd - vStart).Trim();
@@ -93,7 +70,7 @@ namespace Vcpkg
 
         private void ParseTriplets()
         {
-            RunVcpkg("help triplet", out string output);
+            ExecutionDialog.RunVcpkg("help triplet", out string output);
             foreach(var line in output.Split(new string[] { Environment.NewLine },
                                              StringSplitOptions.RemoveEmptyEntries).Skip(1))
                 Dispatcher.Invoke(new Action<string>(AddTriplet), line.Trim());
@@ -114,7 +91,7 @@ namespace Vcpkg
 
         private void ParseInstalledPackages()
         {
-            RunVcpkg("list png", out string _); // Run vcpkg list to execute database_load_check() method in order to update list.
+            ExecutionDialog.RunVcpkg("list png", out string _); // XXX: Run vcpkg list to execute database_load_check() method in order to update list.
             PackageStatus = Parser.ParseStatus(Path.Combine(Properties.Settings.Default.vcpkg_path, "installed", "vcpkg", "status"));
         }
 
@@ -141,7 +118,7 @@ namespace Vcpkg
 
         private void IntegrateInstall_Click(object sender, RoutedEventArgs e)
         {
-            if (RunVcpkg("integrate install", out string output) == 0)
+            if (ExecutionDialog.RunVcpkg("integrate install", out string output) == 0)
                 MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show("User-wide integration for this vcpkg root is failed!", "Failure",
@@ -150,7 +127,7 @@ namespace Vcpkg
 
         private void IntegrateRemove_Click(object sender, RoutedEventArgs e)
         {
-            if (RunVcpkg("integrate remove", out string output) == 0)
+            if (ExecutionDialog.RunVcpkg("integrate remove", out string output) == 0)
                 MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show("Failed to remove user-wide integration for this vcpkg root!", "Failure",
@@ -159,7 +136,7 @@ namespace Vcpkg
 
         private void IntegratePowerShell_Click(object sender, RoutedEventArgs e)
         {
-            if (RunVcpkg("integrate powershell", out string output) == 0)
+            if (ExecutionDialog.RunVcpkg("integrate powershell", out string output) == 0)
                 MessageBox.Show(output, "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             else
                 MessageBox.Show("Failed to integrate PowerShell tab completion for this vcpkg root!", "Failure",
@@ -174,7 +151,7 @@ namespace Vcpkg
 
         private void MenuNewtriplet_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Show window to set name and then create file and open the editor.
+            new NewTripletDialog().Show();
         }
 
         private void MenuHash_Click(object sender, RoutedEventArgs e)
@@ -186,7 +163,7 @@ namespace Vcpkg
             };
             var result = dialog.ShowDialog(new WindowInteropHelper(this).Handle);
             if (result != CommonFileDialogResult.Ok) return;
-            RunVcpkg("hash " + dialog.FileName.Replace('\\', '/'), out string hash);
+            ExecutionDialog.RunVcpkg("hash " + dialog.FileName.Replace('\\', '/'), out string hash);
             Clipboard.SetDataObject(hash, true);
             MessageBox.Show("SHA512 Hash result is copied to clipboard:\n" + hash, "Hash Result", MessageBoxButton.OK, MessageBoxImage.Information);
         }

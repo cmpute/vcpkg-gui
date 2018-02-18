@@ -75,14 +75,14 @@ namespace Vcpkg
                                 MessageBoxImage.Question) == MessageBoxResult.OK)
             {
                 // TODO: rebuild check. "--recursive" flag is needed for rebuild
-                var code = RunVcpkg("install " + string.Join(" ", pkgs), out string result, true);
+                var code = ExecutionDialog.RunVcpkg("install " + string.Join(" ", pkgs), out string result, true);
             }
         }
 
         private void MenuEdit_Click(object sender, RoutedEventArgs e)
         {
             var pkg = (PortsList.SelectedItem as Port).Name;
-            var code = RunVcpkg("edit " + pkg, out string _, wait: false);
+            var code = ExecutionDialog.RunVcpkg("edit " + pkg, out string _, wait: false);
         }
 
         private void Feature_Checked(object sender, RoutedEventArgs e)
@@ -140,20 +140,20 @@ namespace Vcpkg
                                 MessageBoxButton.OKCancel,
                                 MessageBoxImage.Question) == MessageBoxResult.OK)
             {
-                var code = RunVcpkg("remove " + string.Join(" ", pkgs), out string result, true);
+                var code = ExecutionDialog.RunVcpkg("remove " + string.Join(" ", pkgs), out string result, true);
             }
         }
 
         private void MenuPackageEdit_Click(object sender, RoutedEventArgs e)
         {
             var pkg = (PackagesList.SelectedItem as StatusParagraph).Package;
-            var code = RunVcpkg("edit " + pkg, out string _, wait: false);
+            var code = ExecutionDialog.RunVcpkg("edit " + pkg, out string _, wait: false);
         }
 
         private void MenuPackageEditBT_Click(object sender, RoutedEventArgs e)
         {
             var pkg = (PackagesList.SelectedItem as StatusParagraph).Package;
-            var code = RunVcpkg("edit " + pkg + " --buildtrees", out string _, wait: false);
+            var code = ExecutionDialog.RunVcpkg("edit " + pkg + " --buildtrees", out string _, wait: false);
         }
 
         #endregion
