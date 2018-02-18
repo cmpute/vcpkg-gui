@@ -22,7 +22,7 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [x] `--x-full-desc`
 - [ ] `vcpkg update`
 - [ ] `vcpkg upgrade`
-- [ ] `vcpkg hash`
+- [x] `vcpkg hash`
 ------
 - [x] `vcpkg integrate install`
 - [x] `vcpkg integrate remove`
@@ -55,3 +55,9 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
 ------
 - [ ] `--triplet`
 - [ ] `--vcpkg-root`
+- [ ] `--debug`
+- [ ] `--sendmetrics`
+- [ ] `--printmetrics`
+- [ ] `--no-sendmetrics`
+- [ ] `--featurepackages`
+- [ ] `--no-featurepackages`

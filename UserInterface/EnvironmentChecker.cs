@@ -64,6 +64,7 @@ namespace Vcpkg
         public static bool CheckVcpkgRoot(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;
+            if (!Directory.Exists(path)) return false;
             return Directory.GetFiles(path).Any(fname => Path.GetFileName(fname) == ".vcpkg-root");
         }
 

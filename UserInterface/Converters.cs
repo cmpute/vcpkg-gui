@@ -49,4 +49,19 @@ namespace Vcpkg
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
+
+    public class FeatureNameConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var status = value as StatusParagraph;
+            if (string.IsNullOrEmpty(status.Feature))
+                return status.Package;
+            else
+                return $"{status.Package}[{status.Feature}]";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Interop;
 
 namespace Vcpkg
 {
@@ -31,7 +33,9 @@ namespace Vcpkg
         #region Fields & Bindings
         
         public List<FeatureParagraph> CheckedFeatures = new List<FeatureParagraph>();
-        public ObservableCollection<string> CheckedTriplets = new ObservableCollection<string>();
+        public Dictionary<string, MenuItem> TripletMenuItems = new Dictionary<string, MenuItem>();
+        const string DefaultTriplet = "x86-windows";
+        private bool MenuTripletSet = false;
 
         public string Version
         {
@@ -73,13 +77,23 @@ namespace Vcpkg
         public static readonly DependencyProperty DescriptionHeightProperty =
             DependencyProperty.Register("DescriptionHeight", typeof(double), typeof(MainWindow), new PropertyMetadata((double)40));
 
-        public string CheckedTripletsString
+        public string CheckedTriplet
         {
-            get { return (string)GetValue(CheckedTripletsStringProperty); }
-            set { SetValue(CheckedTripletsStringProperty, value); }
+            get { return (string)GetValue(CheckedTripletProperty); }
+            set
+            {
+                if (CheckedTriplet != value)
+                {
+                    MenuTripletSet = true;
+                    TripletMenuItems[CheckedTriplet].IsChecked = false;
+                    TripletMenuItems[value].IsChecked = true;
+                    MenuTripletSet = false;
+                }
+                SetValue(CheckedTripletProperty, value);
+            }
         }
-        public static readonly DependencyProperty CheckedTripletsStringProperty =
-            DependencyProperty.Register("CheckedTripletsString", typeof(string), typeof(MainWindow), new PropertyMetadata(""));
+        public static readonly DependencyProperty CheckedTripletProperty =
+            DependencyProperty.Register("CheckedTriplet", typeof(string), typeof(MainWindow), new PropertyMetadata(DefaultTriplet));
 
         public List<StatusParagraph> PackageStatus
         {
@@ -135,9 +149,6 @@ namespace Vcpkg
 
         private void ParseTriplets()
         {
-            CheckedTriplets.CollectionChanged += (sender, e) =>
-                CheckedTripletsString = string.Join(", ", CheckedTriplets);
-
             RunVcpkg("help triplet", out string output);
             foreach(var line in output.Split(new string[] { Environment.NewLine },
                                              StringSplitOptions.RemoveEmptyEntries).Skip(1))
@@ -150,9 +161,16 @@ namespace Vcpkg
                 };
                 newitem.Checked += MenuTriplet_Checked;
                 newitem.Unchecked += MenuTriplet_UnChecked;
-                if (tline == "x86-windows") newitem.IsChecked = true;
+                if (tline == DefaultTriplet) newitem.IsChecked = true;
                 TripletsMenu.Items.Add(newitem);
+                TripletMenuItems.Add(tline, newitem);
             }
+
+            // Add customize option
+            TripletsMenu.Items.Add(new Separator());
+            var newtriplet = new MenuItem() { Header = "Add custom triplet.." };
+            newtriplet.Click += Newtriplet_Click;
+            TripletsMenu.Items.Add(newtriplet);
         }
 
         private void ParseInstalledPackages()
@@ -185,10 +203,14 @@ namespace Vcpkg
         }
 
         private void MenuTriplet_Checked(object sender, RoutedEventArgs e)
-            => CheckedTriplets.Add((sender as MenuItem).Header.ToString());
+            => CheckedTriplet = (sender as MenuItem).Header.ToString();
 
         private void MenuTriplet_UnChecked(object sender, RoutedEventArgs e)
-            => CheckedTriplets.Remove((sender as MenuItem).Header.ToString());
+        {
+            if(!MenuTripletSet)
+                // disable manual unchecking
+                (sender as MenuItem).IsChecked = true;
+        }
 
         private void IntegrateInstall_Click(object sender, RoutedEventArgs e)
         {
@@ -222,6 +244,24 @@ namespace Vcpkg
 
         private void MenuShowFullDescription_Unchecked(object sender, RoutedEventArgs e)
             => DescriptionHeight = 40;
+
+        private void Newtriplet_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Show window to set name and then create file and open the editor.
+        }
+
+        private void MenuHash_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog()
+            {
+                EnsureFileExists = true
+            };
+            var result = dialog.ShowDialog(new WindowInteropHelper(this).Handle);
+            if (result != CommonFileDialogResult.Ok) return;
+            RunVcpkg("hash " + dialog.FileName.Replace('\\', '/'), out string hash);
+            Clipboard.SetDataObject(hash, true);
+            MessageBox.Show("SHA512 Hash result is copied to clipboard:\n" + hash, "Hash Result", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
         #endregion
         #region Ports Page Event Handlers
@@ -271,14 +311,13 @@ namespace Vcpkg
                     pkgs.Add($"{port.Name}[core,{featstr}]");
                 }
             }
-            var pkgstr = string.Join(" ", pkgs);
 
-            if (MessageBox.Show("Installing following packages:\n" + pkgstr + "\nAre you sure?", "Confirm",
+            if (MessageBox.Show("Installing following packages:\n" + string.Join("\n", pkgs) + "\nAre you sure?", "Confirm",
                                 MessageBoxButton.OKCancel,
                                 MessageBoxImage.Question) == MessageBoxResult.OK)
             {
                 // TODO: rebuild check. "--recursive" flag is needed for rebuild
-                var code = RunVcpkg("install " + pkgstr, out string result, true);
+                var code = RunVcpkg("install " + string.Join(" ", pkgs), out string result, true);
             }
         }
 
@@ -329,7 +368,22 @@ namespace Vcpkg
 
         private void MenuRemove_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            List<string> pkgs = new List<string>();
+            foreach (var item in PackagesList.SelectedItems)
+            {
+                var status = item as StatusParagraph;
+                if (string.IsNullOrEmpty(status.Feature))
+                    pkgs.Add($"{status.Package}:{status.Architecture}");
+                else
+                    pkgs.Add($"{status.Package}[{status.Feature}]:{status.Architecture}");
+            }
+
+            if (MessageBox.Show("Installing following packages:\n" + string.Join("\n", pkgs) + "\nAre you sure?", "Confirm",
+                                MessageBoxButton.OKCancel,
+                                MessageBoxImage.Question) == MessageBoxResult.OK)
+            {
+                var code = RunVcpkg("remove " + string.Join(" ", pkgs), out string result, true);
+            }
         }
 
         private void MenuPackageEdit_Click(object sender, RoutedEventArgs e)

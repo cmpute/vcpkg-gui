@@ -31,18 +31,22 @@
                 <Visibility>Visible</Visibility>
             </local:IsEmptyConverter.FalseValue>
         </local:IsEmptyConverter>
+        <local:FeatureNameConverter x:Key="StatusNameConverter"/>
     </Window.Resources>
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Common">
+                <MenuItem Header="_Create Port"/>
                 <MenuItem Header="_Open Terminal"/>
+                <MenuItem Header="Open Terminal with _Triplet.."/>
                 <Separator/>
-                <MenuItem Header="_Hash.."/>
+                <MenuItem Header="_Hash.." Click="MenuHash_Click"/>
                 <MenuItem Header="_Purge"/>
             </MenuItem>
-            <MenuItem Header="_Settings">
+            <MenuItem Header="_Environment">
                 <MenuItem Header="_Triplets" x:Name="TripletsMenu"/>
-                <MenuItem Header="_Set Root Directory"/>
+                <MenuItem Header="_Change Root Directory"/>
+                <MenuItem Header="_Debug Mode" IsCheckable="True"/>
             </MenuItem>
             <MenuItem Header="_Integrate">
                 <MenuItem Header="_Install" Click="IntegrateInstall_Click"/>
@@ -88,7 +92,7 @@
                             <Hyperlink NavigateUri="https://github.com/cmpute" Click="Hyperlink_Click">Jacob Zhong</Hyperlink>
                             <LineBreak/>
                             <Run Text="Selected Triplets: "/>
-                            <Run Text="{Binding CheckedTripletsString}"/>
+                            <Run Text="{Binding CheckedTriplet}"/>
                         </Paragraph>
                     </FlowDocument>
                 </RichTextBox>
@@ -240,7 +244,7 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="2*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Package}"
+                                    <TextBlock Text="{Binding Converter={StaticResource StatusNameConverter}}"
                                                FontSize="20" FontWeight="Bold" VerticalAlignment="Center"/>
                                     <TextBlock Text="{Binding Architecture}" Grid.Column="1"
                                                FontStyle="Italic"  Margin="4,0"/>

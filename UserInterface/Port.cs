@@ -122,6 +122,7 @@ namespace Vcpkg
                     switch (item.Key)
                     {
                         case "Package": status.Package = item.Value; break;
+                        case "Feature": status.Feature = item.Value; break;
                         case "Version": status.Version = item.Value; break;
                         case "Architecture": status.Architecture = item.Value; break;
                         case "Multi-Arch": status.MultiArch = item.Value; break;
@@ -175,6 +176,7 @@ namespace Vcpkg
     public sealed class StatusParagraph
     {
         public string Package { get; set; }
+        public string Feature { get; set; }
         public string Version { get; set; }
         public string Architecture { get; set; }
         public string MultiArch { get; set; }
