@@ -42,7 +42,7 @@ namespace Vcpkg
         /// Find the path to vcpkg
         /// </summary>
         /// <returns>The path of vcpkg. If not found, then <c>null</c> is returned.</returns>
-        public static string GetVcpkgRoot()
+        public static string GetVcpkg()
         {
             string[] paths = new string[]
             {
@@ -52,15 +52,28 @@ namespace Vcpkg
                 Directory.GetCurrentDirectory()
             };
 
-            try { return paths.First(CheckVcpkgRoot); }
+            try { return paths.First(CheckVcpkg); }
             catch { return null; }
         }
 
         /// <summary>
-        /// Check whether vcpkg exists in given path.
+        /// Check whether vcpkg source exists in given path.
         /// </summary>
         /// <param name="path">path to check vcpkg existance</param>
         /// <returns>whether vcpkg exist</returns>
+        public static bool CheckVcpkg(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return false;
+            if (!Directory.Exists(path)) return false;
+            return Directory.GetFiles(path).Any(fname => Path.GetFileName(fname) == "bootstrap-vcpkg.bat")
+                && CheckVcpkgRoot(path);
+        }
+
+        /// <summary>
+        /// Check whether .vcpkg-root exists in given path.
+        /// </summary>
+        /// <param name="path">path to check .vcpkg-root existance</param>
+        /// <returns>whether .vcpkg-root exist</returns>
         public static bool CheckVcpkgRoot(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;

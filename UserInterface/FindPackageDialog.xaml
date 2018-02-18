@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:Vcpkg"
         mc:Ignorable="d"
         Width="400" SizeToContent="Height"
-        ResizeMode="CanMinimize">
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen">
     
     <Window.Resources>
         <local:StringAffixConverter x:Key="TitleConverter" Suffix=" Missing"/>

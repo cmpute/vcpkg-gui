@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -22,16 +23,32 @@ namespace Vcpkg
         {
             InitializeComponent();
             DataContext = this;
+        }
 
-            // Load Data
-            ParseVersion();
-            ParsePorts();
-            ParseTriplets();
-            ParseInstalledPackages();
+        private bool needInit = true;
+        protected override void OnActivated(EventArgs e)
+        {
+            if (needInit)
+            {
+                new Thread(new ThreadStart(() =>
+                {
+                    // Load Data
+                    ShowLoading = Visibility.Visible;
+                    ParseVersion();
+                    ParsePorts();
+                    ParseTriplets();
+                    ParseInstalledPackages();
+                    ShowLoading = Visibility.Collapsed;
+                })).Start();
+            }
+        }
+        protected override void OnClosed(EventArgs e)
+        {
+            Environment.Exit(0); // dispose dummy window here
         }
 
         #region Fields & Bindings
-        
+
         public List<FeatureParagraph> CheckedFeatures = new List<FeatureParagraph>();
         public Dictionary<string, MenuItem> TripletMenuItems = new Dictionary<string, MenuItem>();
         const string DefaultTriplet = "x86-windows";
@@ -40,7 +57,7 @@ namespace Vcpkg
         public string Version
         {
             get { return (string)GetValue(VersionProperty); }
-            set { SetValue(VersionProperty, value); }
+            set { Dispatcher.Invoke(new SetValueDelegate(SetValue), VersionProperty, value); }
         }
         public static readonly DependencyProperty VersionProperty =
             DependencyProperty.Register("Version", typeof(string), typeof(MainWindow), new PropertyMetadata("0.0.0"));
@@ -48,7 +65,7 @@ namespace Vcpkg
         public string BuildDate
         {
             get { return (string)GetValue(BuildDateProperty); }
-            set { SetValue(BuildDateProperty, value); }
+            set { Dispatcher.Invoke(new SetValueDelegate(SetValue), BuildDateProperty, value); }
         }
         public static readonly DependencyProperty BuildDateProperty =
             DependencyProperty.Register("BuildDate", typeof(string), typeof(MainWindow), new PropertyMetadata(""));
@@ -56,7 +73,7 @@ namespace Vcpkg
         public string BuildHash
         {
             get { return (string)GetValue(BuildHashProperty); }
-            set { SetValue(BuildHashProperty, value); }
+            set { Dispatcher.Invoke(new SetValueDelegate(SetValue), BuildHashProperty, value); }
         }
         public static readonly DependencyProperty BuildHashProperty =
             DependencyProperty.Register("BuildHash", typeof(string), typeof(MainWindow), new PropertyMetadata(""));
@@ -64,7 +81,7 @@ namespace Vcpkg
         public List<Port> AllPorts
         {
             get { return (List<Port>)GetValue(AllPortsProperty); }
-            set { SetValue(AllPortsProperty, value); }
+            set { Dispatcher.Invoke(new SetValueDelegate(SetValue), AllPortsProperty, value); }
         }
         public static readonly DependencyProperty AllPortsProperty =
             DependencyProperty.Register("AllPorts", typeof(List<Port>), typeof(MainWindow), new PropertyMetadata(null));
@@ -98,10 +115,18 @@ namespace Vcpkg
         public List<StatusParagraph> PackageStatus
         {
             get { return (List<StatusParagraph>)GetValue(PackageStatusProperty); }
-            set { SetValue(PackageStatusProperty, value); }
+            set { Dispatcher.Invoke(new SetValueDelegate(SetValue), PackageStatusProperty, value); }
         }
         public static readonly DependencyProperty PackageStatusProperty =
             DependencyProperty.Register("PackageStatus", typeof(List<StatusParagraph>), typeof(MainWindow), new PropertyMetadata(null));
+
+        public Visibility ShowLoading
+        {
+            get { return (Visibility)GetValue(ShowLoadingProperty); }
+            set { Dispatcher.Invoke(new SetValueDelegate(SetValue), ShowLoadingProperty, value); }
+        }
+        public static readonly DependencyProperty ShowLoadingProperty =
+            DependencyProperty.Register("ShowLoading", typeof(Visibility), typeof(MainWindow), new PropertyMetadata(Visibility.Visible));
 
         #endregion
         #region Integration
@@ -152,25 +177,20 @@ namespace Vcpkg
             RunVcpkg("help triplet", out string output);
             foreach(var line in output.Split(new string[] { Environment.NewLine },
                                              StringSplitOptions.RemoveEmptyEntries).Skip(1))
+                Dispatcher.Invoke(new Action<string>(AddTriplet), line.Trim());
+        }
+        private void AddTriplet(string triplet)
+        {
+            var newitem = new MenuItem()
             {
-                var tline = line.Trim();
-                var newitem = new MenuItem()
-                {
-                    Header = tline,
-                    IsCheckable = true,
-                };
-                newitem.Checked += MenuTriplet_Checked;
-                newitem.Unchecked += MenuTriplet_UnChecked;
-                if (tline == DefaultTriplet) newitem.IsChecked = true;
-                TripletsMenu.Items.Add(newitem);
-                TripletMenuItems.Add(tline, newitem);
-            }
-
-            // Add customize option
-            TripletsMenu.Items.Add(new Separator());
-            var newtriplet = new MenuItem() { Header = "Add custom triplet.." };
-            newtriplet.Click += Newtriplet_Click;
-            TripletsMenu.Items.Add(newtriplet);
+                Header = triplet,
+                IsCheckable = true,
+            };
+            newitem.Checked += MenuTriplet_Checked;
+            newitem.Unchecked += MenuTriplet_UnChecked;
+            if (triplet == DefaultTriplet) newitem.IsChecked = true;
+            TripletsMenu.Items.Insert(0, newitem);
+            TripletMenuItems.Add(triplet, newitem);
         }
 
         private void ParseInstalledPackages()
@@ -245,7 +265,7 @@ namespace Vcpkg
         private void MenuShowFullDescription_Unchecked(object sender, RoutedEventArgs e)
             => DescriptionHeight = 40;
 
-        private void Newtriplet_Click(object sender, RoutedEventArgs e)
+        private void MenuNewtriplet_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Show window to set name and then create file and open the editor.
         }
@@ -254,7 +274,8 @@ namespace Vcpkg
         {
             var dialog = new CommonOpenFileDialog()
             {
-                EnsureFileExists = true
+                EnsureFileExists = true,
+                Title = "Select file to hash"
             };
             var result = dialog.ShowDialog(new WindowInteropHelper(this).Handle);
             if (result != CommonFileDialogResult.Ok) return;
@@ -400,4 +421,6 @@ namespace Vcpkg
 
         #endregion
     }
+
+    delegate void SetValueDelegate(DependencyProperty obj, object val);
 }

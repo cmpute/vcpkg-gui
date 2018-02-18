@@ -58,7 +58,8 @@ namespace Vcpkg
 
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            DialogResult = false;
+            Close();
         }
 
         private void Browse_Click(object sender, RoutedEventArgs e)
@@ -87,7 +88,7 @@ namespace Vcpkg
             switch (PackageName)
             {
                 case EnvironmentChecker.VcpkgName:
-                    if (!EnvironmentChecker.CheckVcpkgRoot(PackagePath))
+                    if (!EnvironmentChecker.CheckVcpkg(PackagePath))
                     {
                         MessageBox.Show("vcpkg doesn't exist in specified path! Please select again or press 'Download' to download it !",
                                         "vcpkg doesn't exist",
@@ -96,6 +97,7 @@ namespace Vcpkg
                         return;
                     }
                     Properties.Settings.Default.vcpkg_path = PackagePath;
+                    DialogResult = true;
                     Close();
                     break;
             }
@@ -123,7 +125,7 @@ namespace Vcpkg
                     switch(clone.ExitCode)
                     {
                         case 0:
-                            if (!EnvironmentChecker.CheckVcpkgRoot(PackagePath))
+                            if (!EnvironmentChecker.CheckVcpkg(PackagePath))
                             {
                                 MessageBox.Show("vcpkg dosen't exist in clone directory! Please check you git configuration",
                                                 "vcpkg is not donwloaded",
@@ -132,6 +134,7 @@ namespace Vcpkg
                                 return;
                             }
                             Properties.Settings.Default.vcpkg_path = PackagePath;
+                            DialogResult = true;
                             Close();
                             break;
                         case 128:

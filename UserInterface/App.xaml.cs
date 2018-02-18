@@ -17,30 +17,34 @@ namespace Vcpkg
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            Window dummy; // Prevent application exit when FindpackageDialog is closed
             var settings = Vcpkg.Properties.Settings.Default;
+#if DEBUG
+            settings.Reset();
+#endif
 
             // Check if Git is installed
             var gitPath = EnvironmentChecker.GetGit();
             if (string.IsNullOrEmpty(gitPath))
             {
-                new FindPackageDialog(EnvironmentChecker.GitName)
-                { WindowStartupLocation = WindowStartupLocation.CenterScreen }
-                    .ShowDialog();
+                dummy = new Window();
+                if (!new FindPackageDialog(EnvironmentChecker.GitName).ShowDialog() ?? false)
+                    Environment.Exit(1);
             }
 
             // Check if Vcpkg is downloaded
             var getVcpkg = string.IsNullOrEmpty(settings.vcpkg_path);
-            if (!getVcpkg && !EnvironmentChecker.CheckVcpkgRoot(settings.vcpkg_path))
+            if (!getVcpkg && !EnvironmentChecker.CheckVcpkg(settings.vcpkg_path))
                 getVcpkg = true;
 
             if (getVcpkg)
             {
-                var vcpkgPath = EnvironmentChecker.GetVcpkgRoot();
+                var vcpkgPath = EnvironmentChecker.GetVcpkg();
                 if (string.IsNullOrEmpty(vcpkgPath))
                 {
-                    new FindPackageDialog(EnvironmentChecker.VcpkgName)
-                    { WindowStartupLocation = WindowStartupLocation.CenterScreen }
-                        .ShowDialog();
+                    dummy = new Window();
+                    if (!new FindPackageDialog(EnvironmentChecker.VcpkgName).ShowDialog() ?? false)
+                        Environment.Exit(1);
                     vcpkgPath = Vcpkg.Properties.Settings.Default.vcpkg_path;
                 }
                 else Vcpkg.Properties.Settings.Default.vcpkg_path = vcpkgPath;
@@ -89,7 +93,7 @@ namespace Vcpkg
 
                 if (!EnvironmentChecker.CheckVcpkgCompiled(settings.vcpkg_path))
                 {
-                    if (MessageBox.Show("vcpkg is not initialized successfully. Would you like to retry? If not, then this application will be terminated",
+                    if (MessageBox.Show("vcpkg is not initialized successfully. Would you like to retry? If not, then this application will be terminated.",
                                     "Initialize unsuccessfully",
                                     MessageBoxButton.YesNo,
                                     MessageBoxImage.Warning) == MessageBoxResult.No)
