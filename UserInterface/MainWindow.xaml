@@ -87,6 +87,9 @@
                                 Send an email to
                                 <Hyperlink NavigateUri="mailto:vcpkg@microsoft.com" Click="Hyperlink_Click">vcpkg@microsoft.com</Hyperlink>
                                 with any feedback.
+                                <LineBreak/>
+                                Documentation is available online at
+                                <Hyperlink NavigateUri="https://vcpkg.readthedocs.io" Click="Hyperlink_Click">readthedocs</Hyperlink>.
                             </Paragraph>
                             <Paragraph FontSize="16">
                                 <Bold>vcpkg-gui</Bold> Information:

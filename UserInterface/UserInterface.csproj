@@ -58,7 +58,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="FindPackageDialog.xaml">
+    <Page Include="Dialogs\FindPackageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -70,12 +70,20 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Converters.cs" />
-    <Compile Include="EnvironmentChecker.cs" />
-    <Compile Include="FindPackageDialog.xaml.cs">
+    <Compile Include="Utilities\Converters.cs" />
+    <Compile Include="Utilities\EnvironmentChecker.cs" />
+    <Compile Include="Dialogs\FindPackageDialog.xaml.cs">
       <DependentUpon>FindPackageDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.portlist.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.properties.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
