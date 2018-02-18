@@ -12,12 +12,12 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [ ] `--recurse`
   - [ ] `--keep-going`
   - [ ] `--x-xunit`
-- [ ] `vcpkg remove`
+- [x] `vcpkg remove`
   - [ ] `--purge`
   - [ ] `--no-purge`
   - [ ] `--recurse`
   - [ ] `--dry-run`
-  - [ ] `--outdated`
+  - [x] `--outdated`
 - [x] `vcpkg list`
   - [x] `--x-full-desc`
 - [ ] `vcpkg update`
@@ -47,15 +47,15 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
 - [x] `vcpkg edit`
   - [x] `--buildtrees`
 - [ ] `vcpkg import`
-- [ ] `vcpkg create`
+- [x] `vcpkg create`
 - [ ] `vcpkg owns`
 - [ ] `vcpkg cache`
 - [x] `vcpkg version`
 - [x] `vcpkg contact`
 ------
-- [ ] `--triplet`
+- [x] `--triplet`
 - [ ] `--vcpkg-root`
-- [ ] `--debug`
+- [x] `--debug`
 - [ ] `--sendmetrics`
 - [ ] `--printmetrics`
 - [ ] `--no-sendmetrics`

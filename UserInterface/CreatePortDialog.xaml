@@ -1,0 +1,30 @@
+﻿<Window x:Class="Vcpkg.CreatePortDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Vcpkg"
+        mc:Ignorable="d"
+        Title="Create Port"
+        Width="400" SizeToContent="Height"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen">
+    <StackPanel Margin="4">
+        <DockPanel>
+            <Label Content="Port Name:" DockPanel.Dock="Left" Margin="4"/>
+            <TextBox x:Name="PortName" Margin="4"/>
+        </DockPanel>
+        <DockPanel ToolTipService.ToolTip="Set the link where source code archive can be downloaded with">
+            <Label Content="Archive Download Link:" DockPanel.Dock="Left" Margin="4"/>
+            <TextBox x:Name="ArchiveLink" Margin="4"/>
+        </DockPanel>
+        <DockPanel ToolTipService.ToolTip="Set the name of download archive file">
+            <Label Content="Archive Name:" DockPanel.Dock="Left" Margin="4"/>
+            <TextBox x:Name="ArchiveName" Margin="4"/>
+        </DockPanel>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Height="24" Margin="4">
+            <Button Content="Confirm" Margin="4,0" Width="60" Click="Confirm_Click"/>
+            <Button Content="Cancel" Margin="4,0" Width="60" Click="Cancel_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

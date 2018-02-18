@@ -15,7 +15,6 @@ namespace Vcpkg
             var source = (CollectionViewSource)FindResource("PortsSource");
             source.View.Refresh();
         }
-
         private void RefreshPackagesView()
         {
             var source = (CollectionViewSource)FindResource("PackagesSource");
@@ -62,11 +61,11 @@ namespace Vcpkg
                 var features = CheckedFeatures?.Where(feat => feat.CoreName == port.Name)
                                ?? Enumerable.Empty<FeatureParagraph>();
                 if (features.Count() == 0)
-                    pkgs.Add(port.Name);
+                    pkgs.Add($"{port.Name}:{CheckedTriplet}");
                 else
                 {
                     var featstr = string.Join(",", features.Select(feat => feat.Name));
-                    pkgs.Add($"{port.Name}[core,{featstr}]");
+                    pkgs.Add($"{port.Name}[core,{featstr}]:{CheckedTriplet}");
                 }
             }
 
@@ -154,6 +153,12 @@ namespace Vcpkg
         {
             var pkg = (PackagesList.SelectedItem as StatusParagraph).Package;
             var code = ExecutionDialog.RunVcpkg("edit " + pkg + " --buildtrees", out string _, wait: false);
+        }
+
+        private void MenuRemoveOutdated_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: need run --dry-run first to check whether --recurse is needed here
+            var code = ExecutionDialog.RunVcpkg("remove --outdated", out string result, true);
         }
 
         #endregion

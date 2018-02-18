@@ -11,7 +11,6 @@ namespace Vcpkg
     {
         public List<FeatureParagraph> CheckedFeatures = new List<FeatureParagraph>();
         public Dictionary<string, MenuItem> TripletMenuItems = new Dictionary<string, MenuItem>();
-        const string DefaultTriplet = "x86-windows";
         private bool MenuTripletSet = false;
 
         public string Version
@@ -67,10 +66,11 @@ namespace Vcpkg
                     MenuTripletSet = false;
                 }
                 SetValue(CheckedTripletProperty, value);
+                (Application.Current as App).Triplet = value;
             }
         }
         public static readonly DependencyProperty CheckedTripletProperty =
-            DependencyProperty.Register("CheckedTriplet", typeof(string), typeof(MainWindow), new PropertyMetadata(DefaultTriplet));
+            DependencyProperty.Register("CheckedTriplet", typeof(string), typeof(MainWindow), new PropertyMetadata(App.DefaultTriplet));
 
         public List<StatusParagraph> PackageStatus
         {
@@ -87,7 +87,22 @@ namespace Vcpkg
         }
         public static readonly DependencyProperty ShowLoadingProperty =
             DependencyProperty.Register("ShowLoading", typeof(Visibility), typeof(MainWindow), new PropertyMetadata(Visibility.Visible));
+        
+        public string VcpkgPath
+        {
+            get { return (string)GetValue(VcpkgPathProperty); }
+            set { SetValue(VcpkgPathProperty, value); }
+        }
+        public static readonly DependencyProperty VcpkgPathProperty =
+            DependencyProperty.Register("VcpkgPath", typeof(string), typeof(MainWindow), new PropertyMetadata(string.Empty));
 
+        public string VcpkgRootPath
+        {
+            get { return (string)GetValue(VcpkgRootPathProperty); }
+            set { SetValue(VcpkgRootPathProperty, value); }
+        }
+        public static readonly DependencyProperty VcpkgRootPathProperty =
+            DependencyProperty.Register("VcpkgRootPath", typeof(string), typeof(MainWindow), new PropertyMetadata(string.Empty));
     }
 
     delegate void SetValueDelegate(DependencyProperty obj, object val);

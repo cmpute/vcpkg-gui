@@ -23,6 +23,9 @@ namespace Vcpkg
         {
             InitializeComponent();
             DataContext = this;
+
+            VcpkgPath = Properties.Settings.Default.vcpkg_path;
+            VcpkgRootPath = (Application.Current as App).VcpkgRootPath;
         }
 
         private bool needInit = true;
@@ -84,7 +87,7 @@ namespace Vcpkg
             };
             newitem.Checked += MenuTriplet_Checked;
             newitem.Unchecked += MenuTriplet_UnChecked;
-            if (triplet == DefaultTriplet) newitem.IsChecked = true;
+            if (triplet == App.DefaultTriplet) newitem.IsChecked = true;
             TripletsMenu.Items.Insert(0, newitem);
             TripletMenuItems.Add(triplet, newitem);
         }
@@ -152,22 +155,53 @@ namespace Vcpkg
         private void MenuNewtriplet_Click(object sender, RoutedEventArgs e)
         {
             new NewTripletDialog().Show();
+            // TODO: Fresh triplets list after it
         }
 
         private void MenuHash_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new CommonOpenFileDialog()
-            {
-                EnsureFileExists = true,
-                Title = "Select file to hash"
-            };
+            var dialog = new CommonOpenFileDialog("Select file to hash") { EnsureFileExists = true };
             var result = dialog.ShowDialog(new WindowInteropHelper(this).Handle);
             if (result != CommonFileDialogResult.Ok) return;
             ExecutionDialog.RunVcpkg("hash " + dialog.FileName.Replace('\\', '/'), out string hash);
             Clipboard.SetDataObject(hash, true);
             MessageBox.Show("SHA512 Hash result is copied to clipboard:\n" + hash, "Hash Result", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+        
+        private void MenuGenerateGraph_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonSaveFileDialog("Save graph (.dot) file") { DefaultExtension = ".dot" };
+            dialog.Filters.Add(new CommonFileDialogFilter("GraphViz Graph", ".dot"));
+            if (dialog.ShowDialog(new WindowInteropHelper(this).Handle) == CommonFileDialogResult.Ok)
+            {
+                ExecutionDialog.RunVcpkg("search --graph", out string graph);
+                // TODO: the process will block here if not using shell
+                File.WriteAllText(dialog.FileName, graph);
+            }
+        }
 
+        private void DebugMode_Checked(object sender, RoutedEventArgs e) => (Application.Current as App).DebugVcpkg = true;
+
+        private void DebugMode_Unchecked(object sender, RoutedEventArgs e) => (Application.Current as App).DebugVcpkg = false;
+
+        private void MenuCreatePort_Click(object sender, RoutedEventArgs e)
+        {
+            new CreatePortDialog().Show();
+        }
+
+        private void MenuChangeRoot_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CommonOpenFileDialog("Select .vcpkg-root file") { EnsureFileExists = true };
+            dialog.Filters.Add(new CommonFileDialogFilter("Vcpkg Root", ".vcpkg-root"));
+            if (dialog.ShowDialog(new WindowInteropHelper(this).Handle) == CommonFileDialogResult.Ok)
+            {
+                var path = Path.GetDirectoryName(dialog.FileName);
+                (Application.Current as App).VcpkgRootPath = path;
+                VcpkgRootPath = path;
+            }
+
+            // TODO: update ports, packages and triplets list
+        }
         #endregion
     }
 }

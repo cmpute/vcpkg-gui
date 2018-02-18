@@ -102,7 +102,10 @@ namespace Vcpkg
                 else compile = false;
             }
             
+            // Set default values
             Properties.Add(nameof(VcpkgRootPath), Vcpkg.Properties.Settings.Default.vcpkg_path);
+            Properties.Add(nameof(Triplet), DefaultTriplet);
+            Properties.Add(nameof(DebugVcpkg), false);
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -115,6 +118,19 @@ namespace Vcpkg
         {
             get => Properties[nameof(VcpkgRootPath)] as string;
             set => Properties[nameof(VcpkgRootPath)] = value;
+        }
+        
+        public const string DefaultTriplet = "x86-windows";
+        public string Triplet
+        {
+            get => Properties[nameof(Triplet)] as string;
+            set => Properties[nameof(Triplet)] = value;
+        }
+
+        public bool DebugVcpkg
+        {
+            get => (bool)Properties[nameof(DebugVcpkg)];
+            set => Properties[nameof(DebugVcpkg)] = value;
         }
     }
 }

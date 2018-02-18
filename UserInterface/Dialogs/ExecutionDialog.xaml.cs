@@ -45,6 +45,9 @@ namespace Vcpkg
         /// <returns>The exit code of the execution</returns>
         public static int RunVcpkg(string arguments, out string output, bool useShell = false, bool wait = true)
         {
+            if ((Application.Current as App).DebugVcpkg)
+                arguments += " --debug";
+
             ProcessStartInfo info = new ProcessStartInfo()
             {
                 FileName = Path.Combine(Properties.Settings.Default.vcpkg_path, "vcpkg.exe"),
@@ -91,6 +94,7 @@ namespace Vcpkg
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action<string>(AppendText), e.Data);
+            // TODO: Add regex to find "packages x/x" and "...done" to compute the progress
         }
 
         private void AppendText(string text) => Output.Text += text + Environment.NewLine;
@@ -122,6 +126,7 @@ namespace Vcpkg
         {
             base.OnClosing(e);
             if(_isRunning) _process.Kill();
+            // TODO: Refresh packages list when command finished (or manually refresh)
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

@@ -35,31 +35,33 @@
     </Window.Resources>
     <Grid>
         <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_Common">
-                <MenuItem Header="_Create Port"/>
-                <MenuItem Header="_Open Terminal"/>
-                <MenuItem Header="Open Terminal with _Triplet.."/>
-                <Separator/>
-                <MenuItem Header="_Hash.." Click="MenuHash_Click"/>
-                <MenuItem Header="_Purge"/>
-            </MenuItem>
-            <MenuItem Header="_Environment">
-                <MenuItem Header="_Triplets" x:Name="TripletsMenu">
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_Common">
+                    <MenuItem Header="_Create Port" Click="MenuCreatePort_Click"/>
+                    <MenuItem Header="_Open Terminal"/>
+                    <MenuItem Header="Open Terminal with _Triplet.."/>
                     <Separator/>
-                    <MenuItem Header="_Add custom triplet.." Click="MenuNewtriplet_Click"/>
+                    <MenuItem Header="_Hash.." Click="MenuHash_Click"/>
+                    <MenuItem Header="Generate _Graphviz Graph" Click="MenuGenerateGraph_Click"/>
+                    <MenuItem Header="_Purge"/>
                 </MenuItem>
-                <MenuItem Header="_Change Root Directory"/>
-                <MenuItem Header="_Debug Mode" IsCheckable="True"/>
-            </MenuItem>
-            <MenuItem Header="_Integrate">
-                <MenuItem Header="_Install" Click="IntegrateInstall_Click"/>
-                <MenuItem Header="_Remove" Click="IntegrateRemove_Click"/>
-                <MenuItem Header="Integrate PowerShell" Click="IntegratePowerShell_Click"
-                          ToolTip="Enable PowerShell Tab-Completion"/>
-                <MenuItem Header="Integrate _Project"/>
-            </MenuItem>
-        </Menu>
+                <MenuItem Header="_Environment">
+                    <MenuItem Header="_Triplets" x:Name="TripletsMenu">
+                        <Separator/>
+                        <MenuItem Header="_Add custom triplet.." Click="MenuNewtriplet_Click"/>
+                    </MenuItem>
+                    <MenuItem Header="_Change Root Directory" Click="MenuChangeRoot_Click"/>
+                    <MenuItem Header="_Debug Mode" IsCheckable="True"
+                              Checked="DebugMode_Checked" Unchecked="DebugMode_Unchecked"/>
+                </MenuItem>
+                <MenuItem Header="_Integrate">
+                    <MenuItem Header="_Install" Click="IntegrateInstall_Click"/>
+                    <MenuItem Header="_Remove" Click="IntegrateRemove_Click"/>
+                    <MenuItem Header="Integrate PowerShell" Click="IntegratePowerShell_Click"
+                              ToolTip="Enable PowerShell Tab-Completion"/>
+                    <MenuItem Header="Integrate _Project"/>
+                </MenuItem>
+            </Menu>
             <TabControl>
                 <TabItem Header="Information">
                     <RichTextBox IsReadOnly="True" IsDocumentEnabled="True" 
@@ -98,16 +100,16 @@
                                 <Run Text="Author: "/>
                                 <Hyperlink NavigateUri="https://github.com/cmpute" Click="Hyperlink_Click">Jacob Zhong</Hyperlink>
                                 <LineBreak/>
+                            </Paragraph>
+                            <Paragraph Margin="8,0">
                                 <Run Text="Current Triplet: "/>
                                 <Run Text="{Binding CheckedTriplet}"/>
                                 <LineBreak/>
-                            </Paragraph>
-                            <Paragraph Margin="8,0">
-                                <Run Text="Vcpkg tool Path: "/>
-                                <Run/>
+                                <Run Text="Vcpkg tool Path:"/>
+                                <Run Text="{Binding VcpkgPath, Mode=OneTime}"/>
                                 <LineBreak/>
                                 <Run Text="Vcpkg-root Path: "/>
-                                <Run/>
+                                <Run Text="{Binding VcpkgRootPath}"/>
                                 <LineBreak/>
                             </Paragraph>
                         </FlowDocument>
@@ -239,6 +241,7 @@
                             <ListView.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Remove" Click="MenuRemove_Click"/>
+                                    <MenuItem Header="Remove Outdated" Click="MenuRemoveOutdated_Click"/>
                                     <MenuItem Header="Edit" Click="MenuPackageEdit_Click"/>
                                     <MenuItem Header="Edit Build Trees" Click="MenuPackageEditBT_Click"/>
                                     <Separator/>
