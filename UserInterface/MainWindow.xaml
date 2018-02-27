@@ -53,6 +53,8 @@
                     <MenuItem Header="_Change Root Directory" Click="MenuChangeRoot_Click"/>
                     <MenuItem Header="_Debug Mode" IsCheckable="True"
                               Checked="DebugMode_Checked" Unchecked="DebugMode_Unchecked"/>
+                    <MenuItem Header="Dry Run" IsCheckable="True"
+                              Checked="DryRun_Checked" Unchecked="DryRun_UnChecked"/>
                 </MenuItem>
                 <MenuItem Header="_Integrate">
                     <MenuItem Header="_Install" Click="IntegrateInstall_Click"/>
@@ -149,6 +151,13 @@
                                 <ContextMenu>
                                     <MenuItem Header="Install" Click="MenuInstall_Click"/>
                                     <MenuItem Header="Edit" Click="MenuEdit_Click"/>
+                                    <MenuItem Header="Export as..">
+                                        <MenuItem Header="Raw Folder"/>
+                                        <MenuItem Header="Zip Archive (.zip)"/>
+                                        <MenuItem Header="7Zip Archive (.7z)"/>
+                                        <MenuItem Header="Nuget Package (.nuget)"/>
+                                        <MenuItem Header="Qt Installer (IFW)"/>
+                                    </MenuItem>
                                     <Separator/>
                                     <MenuItem Header="Show full description" IsCheckable="True"
                                           Checked="MenuShowFullDescription_Checked"
@@ -183,7 +192,8 @@
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate DataType="{x:Type local:FeatureParagraph}">
                                                         <CheckBox Margin="8" HorizontalContentAlignment="Stretch"
-                                                              Checked="Feature_Checked" Unchecked="Feature_Unchecked">
+                                                                  Checked="Feature_Checked" Unchecked="Feature_Unchecked"
+                                                                  IsChecked="{Binding IsDefault}">
                                                             <Grid>
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="Auto"/>

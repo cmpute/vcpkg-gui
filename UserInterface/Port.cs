@@ -10,7 +10,7 @@ namespace Vcpkg
 {
     public static class Parser
     {
-        private static string[] DotSplit(string str)
+        private static string[] CommaSplit(string str)
             => str.Split(new string[] { ", " }, StringSplitOptions.RemoveEmptyEntries);
 
         public static List<Dictionary<string, string>> ParseParagraph(string filepath)
@@ -56,7 +56,7 @@ namespace Vcpkg
             const string FeatureToken = "Feature";
 
             var port = new Port();
-            foreach (var paragraph in Parser.ParseParagraph(filepath))
+            foreach (var paragraph in ParseParagraph(filepath))
             {
                 if (paragraph.Keys.Contains(SourceToken))
                 {
@@ -65,11 +65,11 @@ namespace Vcpkg
                         switch (item.Key)
                         {
                             case "Version": port.CoreParagraph.Version = item.Value; break;
-                            case "Build-Depends": port.CoreParagraph.Depends = DotSplit(item.Value); break;
+                            case "Build-Depends": port.CoreParagraph.Depends = CommaSplit(item.Value); break;
                             case "Description": port.CoreParagraph.Description = item.Value; break;
                             case "Maintainer": port.CoreParagraph.Maintainer = item.Value; break;
+                            case "Default-Features": port.CoreParagraph.DefaultFeatures = CommaSplit(item.Value); break;
                             case "Supports": throw new NotSupportedException();
-                            case "Default-Features": throw new NotSupportedException();
                         }
                 }
                 else if (paragraph.Keys.Contains(FeatureToken))
@@ -81,9 +81,11 @@ namespace Vcpkg
                     foreach (var item in paragraph)
                         switch (item.Key)
                         {
-                            case "Build-Depends": feature.Depends = DotSplit(item.Value); break;
+                            case "Build-Depends": feature.Depends = CommaSplit(item.Value); break;
                             case "Description": feature.Description = item.Value; break;
                         }
+                    feature.IsDefault = port.CoreParagraph.DefaultFeatures?.Contains(feature.Name) ?? false;
+                    port.FeatureParagraphs.Add(feature);
                 }
                 else throw new FormatException("Unknown paragraph type");
             }
@@ -126,7 +128,7 @@ namespace Vcpkg
                         case "Version": status.Version = item.Value; break;
                         case "Architecture": status.Architecture = item.Value; break;
                         case "Multi-Arch": status.MultiArch = item.Value; break;
-                        case "Depends": status.Depends = DotSplit(item.Value); break;
+                        case "Depends": status.Depends = CommaSplit(item.Value); break;
                         case "Description": status.Description = item.Value; break;
                         case "Status":
                             var strs = item.Value.Split(' ');
@@ -170,6 +172,8 @@ namespace Vcpkg
         public string Name { get; set; }
         public string Description { get; set; }
         public string[] Depends { get; set; }
+
+        public bool IsDefault { get; set; }
     }
 
     [DebuggerDisplay("{Package}:{Architecture}")]

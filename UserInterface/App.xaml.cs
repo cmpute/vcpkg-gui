@@ -106,6 +106,7 @@ namespace Vcpkg
             Properties.Add(nameof(VcpkgRootPath), Vcpkg.Properties.Settings.Default.vcpkg_path);
             Properties.Add(nameof(Triplet), DefaultTriplet);
             Properties.Add(nameof(DebugVcpkg), false);
+            Properties.Add(nameof(DryRun), false);
         }
 
         protected override void OnExit(ExitEventArgs e)
@@ -131,6 +132,12 @@ namespace Vcpkg
         {
             get => (bool)Properties[nameof(DebugVcpkg)];
             set => Properties[nameof(DebugVcpkg)] = value;
+        }
+
+        public bool DryRun
+        {
+            get => (bool)Properties[nameof(DryRun)];
+            set => Properties[nameof(DryRun)] = value;
         }
     }
 }

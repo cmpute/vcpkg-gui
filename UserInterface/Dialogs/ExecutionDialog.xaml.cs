@@ -31,7 +31,8 @@ namespace Vcpkg
             command.BeginErrorReadLine();
             _process = command;
 
-            if(wait) new Thread(new ThreadStart(WaitforExit)).Start();
+            // TODO: It will take quite several seconds between the process end and the thread stop. Need to look into this.
+            if (wait) new Thread(new ThreadStart(WaitforExit)).Start();
             if (parseProgress) ProgressBar.Visibility = Visibility.Visible;
         }
 
@@ -47,6 +48,9 @@ namespace Vcpkg
         {
             if ((Application.Current as App).DebugVcpkg)
                 arguments += " --debug";
+            if ((Application.Current as App).DryRun)
+                if (arguments.StartsWith("install") || arguments.StartsWith("remove") || arguments.StartsWith("export"))
+                arguments += " --dry-run";
 
             ProcessStartInfo info = new ProcessStartInfo()
             {

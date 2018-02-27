@@ -62,7 +62,8 @@ namespace Vcpkg
             var splitHead = vstr.IndexOf('-');
             var splitEnd = vstr.LastIndexOf('-');
             Version = vstr.Substring(0, splitHead);
-            BuildDate = vstr.Substring(splitHead + 1, splitEnd - splitHead - 1);
+            if(splitHead != splitEnd) // "unknownhash"
+                BuildDate = vstr.Substring(splitHead + 1, splitEnd - splitHead - 1);
             BuildHash = vstr.Substring(splitEnd + 1);
         }
 
@@ -181,8 +182,10 @@ namespace Vcpkg
         }
 
         private void DebugMode_Checked(object sender, RoutedEventArgs e) => (Application.Current as App).DebugVcpkg = true;
-
         private void DebugMode_Unchecked(object sender, RoutedEventArgs e) => (Application.Current as App).DebugVcpkg = false;
+
+        private void DryRun_Checked(object sender, RoutedEventArgs e) => (Application.Current as App).DryRun = true;
+        private void DryRun_UnChecked(object sender, RoutedEventArgs e) => (Application.Current as App).DryRun = false;
 
         private void MenuCreatePort_Click(object sender, RoutedEventArgs e)
         {

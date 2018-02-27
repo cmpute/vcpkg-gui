@@ -6,7 +6,7 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [ ] `--graph`
   - [x] `--x-full-desc`
 - [x] `vcpkg install`
-  - [ ] `--dry-run`
+  - [x] `--dry-run`
   - [ ] `--head`
   - [ ] `--no-downloads`
   - [ ] `--recurse`
@@ -16,7 +16,7 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
   - [ ] `--purge`
   - [ ] `--no-purge`
   - [ ] `--recurse`
-  - [ ] `--dry-run`
+  - [x] `--dry-run`
   - [x] `--outdated`
 - [x] `vcpkg list`
   - [x] `--x-full-desc`
@@ -30,7 +30,7 @@ GUI for [Microsoft vcpkg](https://github.com/Microsoft/vcpkg) based on WPF.
 - [ ] `vcpkg integrate powershell`
 ------
 - [ ] `vcpkg export`
-  - [ ] `--dry-run`
+  - [x] `--dry-run`
   - [ ] `--raw`
   - [ ] `--nuget`
   - [ ] `--ifw`
