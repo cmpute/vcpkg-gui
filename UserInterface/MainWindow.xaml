@@ -151,13 +151,6 @@
                                 <ContextMenu>
                                     <MenuItem Header="Install" Click="MenuInstall_Click"/>
                                     <MenuItem Header="Edit" Click="MenuEdit_Click"/>
-                                    <MenuItem Header="Export as..">
-                                        <MenuItem Header="Raw Folder"/>
-                                        <MenuItem Header="Zip Archive (.zip)"/>
-                                        <MenuItem Header="7Zip Archive (.7z)"/>
-                                        <MenuItem Header="Nuget Package (.nuget)"/>
-                                        <MenuItem Header="Qt Installer (IFW)"/>
-                                    </MenuItem>
                                     <Separator/>
                                     <MenuItem Header="Show full description" IsCheckable="True"
                                           Checked="MenuShowFullDescription_Checked"
@@ -250,10 +243,17 @@
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListView.ContextMenu>
                                 <ContextMenu>
-                                    <MenuItem Header="Remove" Click="MenuRemove_Click"/>
-                                    <MenuItem Header="Remove Outdated" Click="MenuRemoveOutdated_Click"/>
                                     <MenuItem Header="Edit" Click="MenuPackageEdit_Click"/>
                                     <MenuItem Header="Edit Build Trees" Click="MenuPackageEditBT_Click"/>
+                                    <MenuItem Header="Export as..">
+                                        <MenuItem Header="Raw Folder" Click="MenuExportRaw_Click"/>
+                                        <MenuItem Header="Zip Archive (.zip)"/>
+                                        <MenuItem Header="7Zip Archive (.7z)"/>
+                                        <MenuItem Header="Nuget Package (.nupkg)"/>
+                                        <MenuItem Header="Qt Installer (IFW)"/>
+                                    </MenuItem>
+                                    <MenuItem Header="Remove" Click="MenuRemove_Click"/>
+                                    <MenuItem Header="Remove Outdated" Click="MenuRemoveOutdated_Click"/>
                                     <Separator/>
                                     <MenuItem Header="Show full description" IsCheckable="True"
                                           Checked="MenuShowFullDescription_Checked"

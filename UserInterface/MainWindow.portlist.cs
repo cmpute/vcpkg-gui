@@ -123,7 +123,7 @@ namespace Vcpkg
         private void PackageNameOnlyCheckBox_Checked(object sender, RoutedEventArgs e)
             => RefreshPackagesView();
 
-        private void MenuRemove_Click(object sender, RoutedEventArgs e)
+        private string GetSelectedPackageNames()
         {
             List<string> pkgs = new List<string>();
             foreach (var item in PackagesList.SelectedItems)
@@ -134,12 +134,28 @@ namespace Vcpkg
                 else
                     pkgs.Add($"{status.Package}[{status.Feature}]:{status.Architecture}");
             }
+            return string.Join(" ", pkgs);
+        }
 
-            if (MessageBox.Show("Installing following packages:\n" + string.Join("\n", pkgs) + "\nAre you sure?", "Confirm",
+        private void MenuRemove_Click(object sender, RoutedEventArgs e)
+        {
+            var pkgs = GetSelectedPackageNames();
+            if (MessageBox.Show("Removing following packages:\n" + pkgs.Replace(' ', '\n') + "\nAre you sure?", "Confirm",
                                 MessageBoxButton.OKCancel,
                                 MessageBoxImage.Question) == MessageBoxResult.OK)
             {
-                var code = ExecutionDialog.RunVcpkg("remove " + string.Join(" ", pkgs), out string result, true);
+                var code = ExecutionDialog.RunVcpkg("remove " + pkgs, out string result, true);
+            }
+        }
+
+        private void MenuExportRaw_Click(object sender, RoutedEventArgs e)
+        {
+            var pkgs = GetSelectedPackageNames();
+            if (MessageBox.Show("Exporting following packages:\n" + pkgs.Replace(' ', '\n') + "\nAre you sure?", "Confirm",
+                                MessageBoxButton.OKCancel,
+                                MessageBoxImage.Question) == MessageBoxResult.OK)
+            {
+                new ExportDialog("export --raw " + pkgs).ShowDialog();
             }
         }
 

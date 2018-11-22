@@ -62,6 +62,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Dialogs\ExportDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Dialogs\FindPackageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -80,6 +84,9 @@
     </Compile>
     <Compile Include="CreatePortDialog.xaml.cs">
       <DependentUpon>CreatePortDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ExportDialog.xaml.cs">
+      <DependentUpon>ExportDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\NewTripletDialog.xaml.cs">
       <DependentUpon>NewTripletDialog.xaml</DependentUpon>
