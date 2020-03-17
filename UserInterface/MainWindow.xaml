@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Vcpkg"
         xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="525">
+        Title="vcpkg-gui" Height="400" Width="525">
     <Window.Resources>
         <CollectionViewSource x:Key="PortsSource"
                               Source="{Binding Path=AllPorts}"
